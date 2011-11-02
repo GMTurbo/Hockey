@@ -146,21 +146,21 @@ Game.prototype.prepareScene = function() {
     this.scene.addLight(new THREE.AmbientLight(0x202020));
 	
     this.scene.addLight( pointLight );
-	var sphere          = new THREE.SphereGeometry( 139, 8, 8 );
-    orbiter               = new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color:0xf0f0f0 } ) );
-    orbiter.position      = pointLight.position;
-	orbiter.scale.x       = orbiter.scale.y = orbiter.scale.z = 0.05;
+	//var sphere          = new THREE.SphereGeometry( 139, 8, 8 );
+    //orbiter               = new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color:0xf0f0f0 } ) );
+    //orbiter.position      = pointLight.position;
+	//orbiter.scale.x       = orbiter.scale.y = orbiter.scale.z = 0.05;
 	//this.scene.addObject(orbiter);
 	//this.createGalaxy();
 	
     // Set a box around the play field 0x00cc00
-    
-	//shaderMaterial = new THREE.MeshShaderMaterial({
-	//	uniforms:		paddleUnis.top,
-	//	vertexShader:   $('#vs').text(),
-	//	fragmentShader: $('#fs').text()
-	//});
-	
+    //directionalLight = new THREE.DirectionalLight( 0xffffff );
+	//directionalLight.position.set( 0, 1, 2).normalize();
+	//this.scene.addLight( directionalLight );
+					
+	this.pointLight = new THREE.PointLight( 0xffffff );
+	this.pointLight.intensity = 10;
+	this.scene.addLight( pointLight );
 	//jiglib setup
 	system = jigLib.PhysicsSystem.getInstance();
 	csystem = new jigLib.CollisionSystem();
@@ -189,58 +189,25 @@ Game.prototype.prepareScene = function() {
 	bottom.set_movable(false);
 	bottom.set_restitution(50);
 	system.addBody(bottom);
-
-	//panel = new jigLib.JBox(null, 1.2*field.width, 10, 1.2*field.width);
-	//panel.set_mass(50);
-	//panel.moveTo([0, 0, 0, 0]);
-	//panel.set_movable(false);
-	//system.addBody(panel);
-
-	// for(var i = 0; i < offset.length; i++) {
-
-		// obj[i] = new jigLib.JBox(null, 160, 10, 160);
-		// obj[i].set_mass(200);//100
-		// obj[i].set_friction(10);
-		// obj[i].moveTo([offset[i], (i % 2 == 1 ? -110 : -150), 0, 0]);
-		// system.addBody(obj[i]);
-
-		// if(worldPoint) {
-
-			// con[i] = new jigLib.JConstraintWorldPoint(obj[i], [0,80,0,0], [offset[i], (i % 2 == 1 ? -130 : -170), 0, 0]);
-			// system.addConstraint(con[i]);
-		// }
-		// else {
-
-			// pin[i] = new jigLib.JBox(null, 1, 1, 1);
-			// pin[i].moveTo([offset[i], 0, 0, 0]);
-			// pin[i].set_movable(false);
-			// system.addBody(pin[i]);
-
-	// //		con[i] = new jigLib.JConstraintMaxDistance(obj[i], jigLib.Vector3DUtil.Y_AXIS.slice(), pin[i], jigLib.Vector3DUtil.Y_AXIS.slice(), (i % 2 == 1 ? 130 : 170));
-	// //		con[i] = new jigLib.JConstraintMaxDistance(obj[i], [0,80,0,0], pin[i], jigLib.Vector3DUtil.Y_AXIS.slice(), (i % 2 == 1 ? 130 : 170));
-			// con[i] = new jigLib.JConstraintPoint(obj[i], [0,80,0,0], pin[i], jigLib.Vector3DUtil.Y_AXIS.slice(), (i % 2 == 1 ? 30 : 70));
-			// system.addConstraint(con[i]);
-		// }
-	// }
 	
-	var materials = [
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}), // right
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}), // left
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}), //top
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}), // bottom
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}), // back
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}) // front
+	//var materials = [
+      //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}), // right
+        //        new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}), // left
+       //         new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}), //top
+         //       new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}), // bottom
+           //     new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}), // back
+             //   new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}) // front
                 //shaderMaterial
-       ];
+       //];
 
-    var mesh = new THREE.Mesh(new THREE.CubeGeometry(field.width - 50, 5, 100), materials);
+    var mesh = new THREE.Mesh(new THREE.CubeGeometry(field.width - 50, 5, 100), new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
 
     mesh.position.x = 0;
     mesh.position.y = -field.height / 2;
     mesh.position.z = 0;
     this.scene.addObject(mesh);
 
-    mesh = new THREE.Mesh(new THREE.CubeGeometry(field.width - 50, 5, 100), materials);
+    mesh = new THREE.Mesh(new THREE.CubeGeometry(field.width - 50, 5, 100), new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
 
     mesh.position.x = 0;
     mesh.position.y = field.height / 2;
@@ -252,30 +219,30 @@ Game.prototype.prepareScene = function() {
 	
     //var image = new Image();
 	var plane = new THREE.PlaneGeometry( 1.2*field.width, 1.2*field.height );
-    quadTarget = new THREE.Mesh( plane, new THREE.MeshPhongMaterial( { ambient: 0x000000, color: 0x5500ff, specular: 0x555555, shininess: 30 } ) );
+    quadTarget = new THREE.Mesh( plane, new THREE.MeshPhongMaterial( { ambient: Math.random()*0xfffff, color: Math.random()*0xfffff, specular: Math.random()*0xfffff, shininess: 100 } ) );
 	quadTarget.position.z = -80;
 	this.scene.addObject( quadTarget );
 	
 	mesh = this.initObjects([0,0,0]);
 
-	var paddlematerial1 = [
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}), // right
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}), // left
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}), //top
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}), // bottom
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}), // back
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}) // front
-       			//shaderMaterial
-       ];
-	 var paddlematerial2 = [
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}), // right
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}), // left
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}), //top
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}), // bottom
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}), // back
-                new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}) // front
-       			//shaderMaterial
-       ];
+	//var paddlematerial1 = [
+      //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}), // right
+        //        new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}), // left
+      //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}), //top
+      //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}), // bottom
+      //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}), // back
+      //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}) // front
+       //			//shaderMaterial
+       //];
+	// var paddlematerial2 = [
+     //           new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}), // right
+      //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}), // left
+     //           new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}), //top
+    //            new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}), // bottom
+    //            new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}), // back
+    //            new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}) // front
+    //   			//shaderMaterial
+    //   ];
     // Prepare player objects
     this.playerMeshes = []; // for players 0 to 1
     for (var playerIndex in this.players) {
@@ -286,7 +253,7 @@ Game.prototype.prepareScene = function() {
 		//	fragmentShader: $('#fs').text()
 		//});
 		
-        mesh = new THREE.Mesh(new THREE.CubeGeometry(player.thickness, player.height, player.width), playerIndex == 0 ? paddlematerial2 : paddlematerial1 );
+        mesh = new THREE.Mesh(new THREE.CubeGeometry(player.thickness, player.height, player.width), new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
         mesh.position.x = player.position.x;
         mesh.position.y = player.position.y;
         mesh.position.z = 0;
@@ -395,6 +362,9 @@ Game.prototype.updateScene = function() {
 		//	console.log("Collision!");
 		this.JL2THREE(this.ballMeshes[i], jball.get_currentState().position, jball.get_currentState().get_orientation().glmatrix);
 	}
+	
+	pointLight.position = new THREE.Vector3(jball.get_currentState().position[0],jball.get_currentState().position[1], 0);
+	
     }else if(finished){
     		this.showMenu = true;
             this.toggleMenu(true);
@@ -449,7 +419,7 @@ var sununiforms = {
 			type: 'v3', // a vec3
 			value: []
 		},
-		image:{ type: "t", value: 0, texture: THREE.ImageUtils.loadTexture( 'textures/sun.gif')}
+		image:{ type: "t", value: 0, texture: THREE.ImageUtils.loadTexture("http://4.bp.blogspot.com/-oMrdziPLqog/TdOsWsmikqI/AAAAAAAAAQA/lGstIyOuRuc/s1600/sun+texture.png")}
 	};
 //attributes shader variables for the sun	
 var attributes = {
