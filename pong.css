@@ -9,7 +9,7 @@ html, body {
 	position: relative;
 	margin: 100px auto 0;
     width: 700px;
-    height: 450px;
+    height: 700px;
     /*border: solid 10px rgba(0,255,0,0.2);*/
 	border: solid 10px rgba(0,249,255,0.5);
 }

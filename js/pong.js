@@ -1,4 +1,4 @@
-var field = { width: 1000, height: 800};
+var field = { width: 1000, height: 1000};
 var game = null;
 var gamespeed = 10;
 var cameraStyle = {

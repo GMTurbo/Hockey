@@ -90,6 +90,7 @@ Game.prototype.resetScores = function(positions) {
 Game.prototype.prepareEvents = function() {
 
     document.addEventListener('keydown', (function(data) {
+		event.preventDefault();
         if(!data.shiftKey){
         	if (data.keyCode !== 27 ){
            		if (!this.mode.demo){
@@ -103,6 +104,7 @@ Game.prototype.prepareEvents = function() {
     }).bind(this));
 
     document.addEventListener('mousemove', (function(data) {
+		event.preventDefault();
         if (!data.shiftKey) {
             if (this.prevY == 0) {
                 this.prevY = data.clientY;
@@ -142,10 +144,11 @@ Game.prototype.prepareScene = function() {
     this.camera.projectionMatrix = THREE.Matrix4.makeOrtho(-this.container.clientWidth, this.container.clientWidth, this.container.clientHeight, -this.container.clientHeight, 1, 2000);
     this.camera.position.y = 0;
     this.camera.position.z = 1000;
+	//this.camera.up.set(0,0,1); // Jankity way to rotate the board.  Not a great way in general
     //0x202020
     this.scene.addLight(new THREE.AmbientLight(0x202020));
 	
-    this.scene.addLight( pointLight );
+    //this.scene.addLight( pointLight );
 	//var sphere          = new THREE.SphereGeometry( 139, 8, 8 );
     //orbiter               = new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color:0xf0f0f0 } ) );
     //orbiter.position      = pointLight.position;
@@ -159,36 +162,20 @@ Game.prototype.prepareScene = function() {
 	//this.scene.addLight( directionalLight );
 					
 	this.pointLight = new THREE.PointLight( 0xffffff );
-	this.pointLight.intensity = 10;
-	this.scene.addLight( pointLight );
+	this.pointLight.intensity = 3;
+	this.scene.addLight( this.pointLight );
 	//jiglib setup
 	system = jigLib.PhysicsSystem.getInstance();
-	csystem = new jigLib.CollisionSystem();
-	system.setGravity([0,-1,0,0]);//-120
+	//csystem = new jigLib.CollisionSystem();
+	system.setGravity([0,0,0,0]);//-120
 	system.setSolverType('ACCUMULATED');//FAST, NORMAL, ACCUMULATED
 
-	var ground = new jigLib.JPlane(null,[0, 0, 1, 0]);
-	ground.set_friction(-10);
-	ground.set_movable(false);
-	ground.moveTo([0,0,0,0]);
+	//var ground = new jigLib.JPlane(null,[0, 0, 1, 0]);
+	//ground.set_friction(0);
+	//ground.set_restitution(100);
+	//ground.set_movable(false);
+	//ground.moveTo([0,0,-10,0]);
 	//system.addBody(ground);
-	
-	
-	//var top = new jigLib.JPlane(null, [0,1,0,0]);
-	var top = new jigLib.JBox(null, field.width - 50, 5, 100);
-	top.set_friction(10);
-	top.moveTo([0,field.height / 2 + 60,0,0]);
-	top.set_movable(false);
-	top.set_restitution(50);
-	system.addBody(top);
-	
-	//var bottom = new jigLib.JPlane(null, [0,1,0,0]);
-	var bottom = new jigLib.JBox(null, field.width - 50, 5, 100);
-	bottom.set_friction(10);
-	bottom.moveTo([0,-field.height / 2 - 60,0,0]);
-	bottom.set_movable(false);
-	bottom.set_restitution(50);
-	system.addBody(bottom);
 	
 	//var materials = [
       //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}), // right
@@ -200,20 +187,20 @@ Game.prototype.prepareScene = function() {
                 //shaderMaterial
        //];
 
-    var mesh = new THREE.Mesh(new THREE.CubeGeometry(field.width - 50, 5, 100), new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
+	// add long walls
+	
+	//Game.prototype.addWall = function(width, height, depth, positionX, positionY, positionZ, material)
+	this.addWall(field.width - 50, 5, 100, 0, -field.height/2, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
+	this.addWall(field.width - 50, 5, 100, 0, field.height/2, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
 
-    mesh.position.x = 0;
-    mesh.position.y = -field.height / 2;
-    mesh.position.z = 0;
-    this.scene.addObject(mesh);
-
-    mesh = new THREE.Mesh(new THREE.CubeGeometry(field.width - 50, 5, 100), new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
-
-    mesh.position.x = 0;
-    mesh.position.y = field.height / 2;
-    mesh.position.z = 0;
-    this.scene.addObject(mesh);
-
+	//add small walls
+	
+	var offset = -50;
+	this.addWall(5, field.height/3 + 30, 100, -field.width / 2 - offset, -field.height / 4, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
+	this.addWall(5, field.height/3 + 30, 100, -field.width / 2 - offset, field.height / 4, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
+	this.addWall(5, field.height/3 + 30, 100, field.width / 2 + offset, -field.height / 4, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
+	this.addWall(5, field.height/3 + 30, 100, field.width / 2 + offset, field.height / 4, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
+	
     materials = [new THREE.MeshLambertMaterial({ color: 0xFFFFFF, wireframe: true, opacity: 0.5 }),
     	                 new THREE.MeshBasicMaterial({ color: 0xFFFFFF, wireframe: true, opacity: 0.5 })];
 	
@@ -223,7 +210,7 @@ Game.prototype.prepareScene = function() {
 	quadTarget.position.z = -80;
 	this.scene.addObject( quadTarget );
 	
-	mesh = this.initObjects([0,0,0]);
+	//mesh = this.initObjects([0,0,0]);
 
 	//var paddlematerial1 = [
       //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}), // right
@@ -253,23 +240,20 @@ Game.prototype.prepareScene = function() {
 		//	fragmentShader: $('#fs').text()
 		//});
 		
-        mesh = new THREE.Mesh(new THREE.CubeGeometry(player.thickness, player.height, player.width), new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
+        //mesh = new THREE.Mesh(new THREE.CubeGeometry(player.thickness, player.height, player.width), new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
+		mesh = new THREE.Mesh(new THREE.SphereGeometry(35,35,35), new THREE.MeshBasicMaterial({color: Math.random()*0xffffff}))
         mesh.position.x = player.position.x;
         mesh.position.y = player.position.y;
         mesh.position.z = 0;
 		mesh.overdraw = true;
 		mesh.matrixAutoUpdate = false;
 		
-		paddles.push(new jigLib.JBox(null, player.thickness, player.height, player.width));
+		paddles.push(new jigLib.JSphere(null, 35));
 		paddles[playerIndex].set_mass(50);//100
 		paddles[playerIndex].set_friction(0);
-		paddles[playerIndex].set_restitution(100);
+		paddles[playerIndex].set_restitution(120);
 		paddles[playerIndex].moveTo([player.position.x, player.position.y, 0, 0]);
-		paddles[playerIndex].set_movable(true);
-		//paddles[playerIndex].addEventListener("collision",function(e){
-		//	jball.setVelocity([layer.position.x > 0 ? 30 : -30, 20,0,0]);
-		//});
-		csystem.addCollisionBody(paddles[playerIndex]);
+		paddles[playerIndex].set_movable(false);
 	    system.addBody(paddles[playerIndex]);
 
         this.scene.addObject(mesh);
@@ -281,8 +265,24 @@ Game.prototype.prepareScene = function() {
 
 };
 
-var currentBallPos = {x:0, y:0, rate: 1.0}
+Game.prototype.addWall = function(width, height, depth, positionX, positionY, positionZ, material){
+	
+	// THREE.CubeGeometry(width, height, depth)
+	ThreeMesh = new THREE.Mesh(new THREE.CubeGeometry(width, height, depth), material);
+	ThreeMesh.position.set(positionX, positionY, positionZ);
+    this.scene.addObject(ThreeMesh);
+	
+	//JBox(skin, width, depth, height)
+	var physicsObj = new jigLib.JBox(null, width, depth, height);
+	physicsObj.set_friction(10);
+	physicsObj.moveTo([positionX, positionY, positionZ, 0]);
+	physicsObj.set_movable(false);
+	physicsObj.set_restitution(100);
+	system.addBody(physicsObj);
+};
 
+var currentBallPos = {x:0, y:0, rate: 1.0}
+var oldPos = new THREE.Vector3(), currentPos = new THREE.Vector3();
 Game.prototype.updateScene = function() {
 	
 	if(this.showMenu){
@@ -327,9 +327,6 @@ Game.prototype.updateScene = function() {
                 } .bind(this));
             }
 
-            //this.ballMeshes[ballIndex].position.x = ball.position.x;
-            //this.ballMeshes[ballIndex].position.y = ball.position.y;
-            //jball.moveTo([this.ballMeshes[ballIndex].position.x, this.ballMeshes[ballIndex].position.y, this.ballMeshes[ballIndex].position.z, 0]);
             currentBallPos = {
 				x: ball.position.x,
 				y: ball.position.y,
@@ -349,7 +346,13 @@ Game.prototype.updateScene = function() {
 	
 	for(var i in this.playerMeshes){
 		if(paddles[i].collisions.length> 0){
-			jball.applyBodyWorldImpulse([paddles[i].collisions[0].dirToBody[0]*10,35,0], [0,0,0])
+			//jball.addBodyTorque([paddles[i].collisions[0].dirToBody[0]*10,35,0]);
+			array = jball.get_currentState().position;
+			currentPos = new THREE.Vector3(array[0],array[1],array[2]);
+			diff = currentPos.subSelf(oldPos);
+			mag = diff.length();
+			diffn = diff.normalize();
+			jball.applyBodyWorldImpulse([diffn.x * mag, diffn.y * mag, 0], [0,0,0])
 		}
 		this.JL2THREE(this.playerMeshes[i], paddles[i].get_currentState().position, paddles[i].get_currentState().get_orientation().glmatrix);
 	}
@@ -358,13 +361,14 @@ Game.prototype.updateScene = function() {
 		this.JL2THREE(this.ballMeshes[i], jball.get_currentState().position, jball.get_currentState().get_orientation().glmatrix);
 	}
 	
-	pointLight.position = new THREE.Vector3(jball.get_currentState().position[0],jball.get_currentState().position[1], 0);
+	this.pointLight.position = new THREE.Vector3(jball.get_currentState().position[0],jball.get_currentState().position[1], 0);
 	
     }else if(finished){
     		this.showMenu = true;
             this.toggleMenu(true);
     }
 
+	oldPos.set(jball.get_currentState().position[0], jball.get_currentState().position[1], jball.get_currentState().position[2]);
 };
 
 Game.prototype.moveComputerPlayer = function() {
@@ -441,7 +445,7 @@ var controlsProps = {
 
 // --- Lights
 
-var pointLight = new THREE.PointLight( 0x2D2D2D );
+//var pointLight = new THREE.PointLight( 0x2D2D2D );
 
 Game.prototype.initObjects = function(position){
 
@@ -460,7 +464,7 @@ Game.prototype.resetBalls = function() {
 
     this.balls = [Ball.getBall()];
     this.ballMeshes = [];
-	csystem.removeCollisionBody(jball);
+	//csystem.removeCollisionBody(jball);
     for (ballIndex in this.balls) {
         var ball = this.balls[ballIndex];
 
@@ -487,10 +491,12 @@ Game.prototype.resetBalls = function() {
 		jball.set_restitution(100);
 		jball.moveTo([ball.position.x,ball.position.y,0,0]);
 		jball.set_movable(true);
-		//jball.setLinearVelocityDamping([1,1,1,1]);
+		jball.set_rotVelocityDamping([0.98,0.98,0.98]);
+		//tmp = jball.get_linVelocityDamping();
+		jball.set_linVelocityDamping([0.992,0.995,0.995]);
 		system.addBody(jball);
-		csystem.addCollisionBody(jball);
-		jball.setVelocity([100,20,0,0]);
+		//csystem.addCollisionBody(jball);
+		jball.setVelocity([50,20,0,0]);
 		
 		//orbiter.position.y = ball.position.y;
 
@@ -570,7 +576,6 @@ Game.prototype.render = function(callback) {
 Game.prototype.JL2THREE = function(target, pos, dir) {
 	var position = new THREE.Matrix4();
 	position.setTranslation(pos[0], pos[1], pos[2])
-	//var position = THREE.Matrix4.setTranslation( pos[0], pos[1], pos[2] );
 	var rotate = new THREE.Matrix4(dir[0], dir[1], dir[2], dir[3], dir[4], dir[5], dir[6], dir[7], dir[8], dir[9], dir[10], dir[11], dir[12], dir[13], dir[14], dir[15]);
 	position.multiplySelf(rotate);
 	target.matrix = position;
