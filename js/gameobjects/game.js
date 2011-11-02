@@ -355,10 +355,6 @@ Game.prototype.updateScene = function() {
 	}
 	
 	for(var i in this.ballMeshes){
-		//jball.set_worldPosition([this.ballMeshes[i].position.x, this.ballMeshes[i].position.y, this.ballMeshes[i].position.z, 0]);
-		//jball.moveTo([this.ballMeshes[i].position.x, this.ballMeshes[i].position.y, this.ballMeshes[i].position.z, 0])
-		//if(jball.collisions.length> 0)
-		//	console.log("Collision!");
 		this.JL2THREE(this.ballMeshes[i], jball.get_currentState().position, jball.get_currentState().get_orientation().glmatrix);
 	}
 	
