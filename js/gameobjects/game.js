@@ -348,9 +348,8 @@ Game.prototype.updateScene = function() {
 		
 	
 	for(var i in this.playerMeshes){
-		//paddles[i].moveTo([this.playerMeshes[i].position.x, this.playerMeshes[i].position.y, this.playerMeshes[i].position.z, 0])
 		if(paddles[i].collisions.length> 0){
-			jball.applyBodyWorldImpulse([paddles[i].collisions[0].dirToBody[0]*10,30,0], [0,0,0])
+			jball.applyBodyWorldImpulse([paddles[i].collisions[0].dirToBody[0]*10,35,0], [0,0,0])
 		}
 		this.JL2THREE(this.playerMeshes[i], paddles[i].get_currentState().position, paddles[i].get_currentState().get_orientation().glmatrix);
 	}
