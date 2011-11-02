@@ -1,0 +1,8 @@
+
+Mac (Via terminal):
+1) alias pong='open /Applications/Google\ Chrome.app --args -disable-web-security'
+
+2) type "pong" without quotes
+
+Windows:
+Edit shortcut to chrome and add the following flag: -disable-web-security
