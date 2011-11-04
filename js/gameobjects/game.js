@@ -144,48 +144,22 @@ Game.prototype.prepareScene = function() {
     this.camera.projectionMatrix = THREE.Matrix4.makeOrtho(-this.container.clientWidth, this.container.clientWidth, this.container.clientHeight, -this.container.clientHeight, 1, 2000);
     this.camera.position.y = 0;
     this.camera.position.z = 1000;
-	//this.camera.up.set(0,0,1); // Jankity way to rotate the board.  Not a great way in general
+	this.camera.up.set(0,0,1); // Jankity way to rotate the board.  Not a great way in general
     //0x202020
     this.scene.addLight(new THREE.AmbientLight(0x202020));
 	
-    //this.scene.addLight( pointLight );
-	//var sphere          = new THREE.SphereGeometry( 139, 8, 8 );
-    //orbiter               = new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color:0xf0f0f0 } ) );
-    //orbiter.position      = pointLight.position;
-	//orbiter.scale.x       = orbiter.scale.y = orbiter.scale.z = 0.05;
-	//this.scene.addObject(orbiter);
-	//this.createGalaxy();
-	
     // Set a box around the play field 0x00cc00
-    //directionalLight = new THREE.DirectionalLight( 0xffffff );
-	//directionalLight.position.set( 0, 1, 2).normalize();
-	//this.scene.addLight( directionalLight );
-					
+	
+	//Point Light for messing with the background surface		
 	this.pointLight = new THREE.PointLight( 0xffffff );
 	this.pointLight.intensity = 3;
 	this.scene.addLight( this.pointLight );
+	
 	//jiglib setup
 	system = jigLib.PhysicsSystem.getInstance();
 	//csystem = new jigLib.CollisionSystem();
 	system.setGravity([0,0,0,0]);//-120
 	system.setSolverType('ACCUMULATED');//FAST, NORMAL, ACCUMULATED
-
-	//var ground = new jigLib.JPlane(null,[0, 0, 1, 0]);
-	//ground.set_friction(0);
-	//ground.set_restitution(100);
-	//ground.set_movable(false);
-	//ground.moveTo([0,0,-10,0]);
-	//system.addBody(ground);
-	
-	//var materials = [
-      //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}), // right
-        //        new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}), // left
-       //         new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}), //top
-         //       new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}), // bottom
-           //     new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}), // back
-             //   new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/wood.jpg")}) // front
-                //shaderMaterial
-       //];
 
 	// add long walls
 	
@@ -195,11 +169,13 @@ Game.prototype.prepareScene = function() {
 
 	//add small walls
 	
-	var offset = -50;
-	this.addWall(5, field.height/3 + 30, 100, -field.width / 2 - offset, -field.height / 4, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
-	this.addWall(5, field.height/3 + 30, 100, -field.width / 2 - offset, field.height / 4, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
-	this.addWall(5, field.height/3 + 30, 100, field.width / 2 + offset, -field.height / 4, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
-	this.addWall(5, field.height/3 + 30, 100, field.width / 2 + offset, field.height / 4, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
+	var offset = 0; // use this to adjust the placement on the small walls
+	var wallHeight = 100; // use to extend length of small walls
+	
+	this.addWall(5, field.height/3 + wallHeight, 100, -field.width / 2 - offset, -field.height / 4, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
+	this.addWall(5, field.height/3 + wallHeight, 100, -field.width / 2 - offset, field.height / 4, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
+	this.addWall(5, field.height/3 + wallHeight, 100, field.width / 2 + offset, -field.height / 4, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
+	this.addWall(5, field.height/3 + wallHeight, 100, field.width / 2 + offset, field.height / 4, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
 	
     materials = [new THREE.MeshLambertMaterial({ color: 0xFFFFFF, wireframe: true, opacity: 0.5 }),
     	                 new THREE.MeshBasicMaterial({ color: 0xFFFFFF, wireframe: true, opacity: 0.5 })];
@@ -209,8 +185,6 @@ Game.prototype.prepareScene = function() {
     quadTarget = new THREE.Mesh( plane, new THREE.MeshPhongMaterial( { ambient: Math.random()*0xfffff, color: Math.random()*0xfffff, specular: Math.random()*0xfffff, shininess: 100 } ) );
 	quadTarget.position.z = -80;
 	this.scene.addObject( quadTarget );
-	
-	//mesh = this.initObjects([0,0,0]);
 
 	//var paddlematerial1 = [
       //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}), // right
@@ -221,15 +195,6 @@ Game.prototype.prepareScene = function() {
       //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}) // front
        //			//shaderMaterial
        //];
-	// var paddlematerial2 = [
-     //           new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}), // right
-      //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}), // left
-     //           new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}), //top
-    //            new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}), // bottom
-    //            new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}), // back
-    //            new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle2.jpg")}) // front
-    //   			//shaderMaterial
-    //   ];
     // Prepare player objects
     this.playerMeshes = []; // for players 0 to 1
     for (var playerIndex in this.players) {
@@ -290,7 +255,7 @@ Game.prototype.updateScene = function() {
 		return;
 	}
 	now = new Date().getTime();
-	system.integrate((now - then) / 75);//400
+	system.integrate((now - then) / 70);//400
 	then = now;
     if (!this.showMenu && !finished) {
         for (ballIndex in this.balls) {
@@ -352,6 +317,12 @@ Game.prototype.updateScene = function() {
 			diff = currentPos.subSelf(oldPos);
 			mag = diff.length();
 			diffn = diff.normalize();
+			var scaleMag = function(oldMag){
+				if(oldMag < 6) return 60;
+				if(oldMag > 30) return 20;
+				return oldMag;
+			};
+			mag = scaleMag(mag);
 			jball.applyBodyWorldImpulse([diffn.x * mag, diffn.y * mag, 0], [0,0,0])
 		}
 		this.JL2THREE(this.playerMeshes[i], paddles[i].get_currentState().position, paddles[i].get_currentState().get_orientation().glmatrix);
@@ -443,66 +414,50 @@ var controlsProps = {
 	CameraMode: 1
 };
 
-// --- Lights
-
-//var pointLight = new THREE.PointLight( 0x2D2D2D );
-
-Game.prototype.initObjects = function(position){
-
-	//this.noiseMaterial = new THREE.MeshShaderMaterial({
-	//	uniforms:		 this.textureUnis,
-	//	vertexShader:   $('#noisevertex').text(),
-	//	fragmentShader: $('#noisefragment').text(),
-	//	lights: false
-	//});
-
-	// make the gnawrly background
-	//this.noiseMap  = new THREE.WebGLRenderTarget( this.container.clientWidth, this.container.clientHeight, { minFilter: THREE.LinearMipMapLinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat } );
-};
-
 Game.prototype.resetBalls = function() {
 
     this.balls = [Ball.getBall()];
     this.ballMeshes = [];
 	//csystem.removeCollisionBody(jball);
     for (ballIndex in this.balls) {
-        var ball = this.balls[ballIndex];
-
-        var materials = [new THREE.MeshLambertMaterial({ color: 0x00ff00 })];
-		var shaderMaterial = new THREE.MeshShaderMaterial({
-			uniforms:       sununiforms,
-			attributes:     attributes,
-			vertexShader:   $('#vs').text(),
-			fragmentShader: $('#fs').text()
-		});
-		
-		var sphere = new THREE.SphereGeometry(20, 20, 20);
-        var mesh = new THREE.Mesh(sphere, shaderMaterial);
-
-        mesh.position.x = ball.position.x;
-        mesh.position.y = ball.position.y;
-        mesh.position.z = 0;
-		mesh.overdraw = true;
-		mesh.matrixAutoUpdate = false;
-		
-		jball=new jigLib.JSphere(null,20);
-		jball.set_mass(1);
-		jball.set_friction(0);
-		jball.set_restitution(100);
-		jball.moveTo([ball.position.x,ball.position.y,0,0]);
-		jball.set_movable(true);
-		jball.set_rotVelocityDamping([0.98,0.98,0.98]);
-		//tmp = jball.get_linVelocityDamping();
-		jball.set_linVelocityDamping([0.992,0.995,0.995]);
-		system.addBody(jball);
-		//csystem.addCollisionBody(jball);
-		jball.setVelocity([50,20,0,0]);
-		
-		//orbiter.position.y = ball.position.y;
-
-        this.scene.addObject(mesh);
-        this.ballMeshes.push(mesh);
+        this.initializeBall(this.balls[ballIndex]);
     }
+};
+
+Game.prototype.initializeBall = function(ball){
+	
+	//ball = this.balls[ballIndex];
+
+    var materials = [new THREE.MeshLambertMaterial({ color: 0x00ff00 })];
+	var shaderMaterial = new THREE.MeshShaderMaterial({
+		uniforms:       sununiforms,
+		attributes:     attributes,
+		vertexShader:   $('#vs').text(),
+		fragmentShader: $('#fs').text()
+	});
+	
+	var sphere = new THREE.SphereGeometry(20, 20, 20);
+    var mesh = new THREE.Mesh(sphere, shaderMaterial);
+
+    mesh.position.x = ball.position.x;
+    mesh.position.y = ball.position.y;
+    mesh.position.z = 0;
+	mesh.overdraw = true;
+	mesh.matrixAutoUpdate = false;
+	
+	jball=new jigLib.JSphere(null,20);
+	jball.set_mass(1);
+	jball.set_friction(0);
+	jball.set_restitution(100);
+	jball.moveTo([ball.position.x,ball.position.y,0,0]);
+	jball.set_movable(true);
+	jball.set_rotVelocityDamping([0.98,0.98,0.98]);
+	jball.set_linVelocityDamping([0.992,0.995,0.995]);
+	system.addBody(jball);
+	jball.setVelocity([50,20,0,0]);
+
+    this.scene.addObject(mesh);
+    this.ballMeshes.push(mesh);
 };
 
 Game.prototype.playerFailed = function(player) {
@@ -513,66 +468,20 @@ Game.prototype.playerFailed = function(player) {
     this.updateScores();
 };
 
-var frame,frame2;
-frame=frame2=0;
-var diameter = 50;
-
 // This method causes the scene to be re-rendered.
 Game.prototype.render = function(callback) {
 
 	this.updateAI();
     this.updateScene();
-	
-	//change the position of the planets
-	//this.movePlanets(frame, frame2);
-	
-	frame+=0.1;
-	frame2+=0.01;
 
-	//calculate new shadered texture background
-	//this.textureUnis.time.value += properties.heat*.5;
-	
-	//set the background plane
-	//quadTarget.materials[ 0 ] = this.noiseMaterial;
-	
 	//render
-	if(this.allowZoom){
-    	this.renderer.render(this.scene, !this.showMenu ? this.camera : zoomCamera);
-    }else{
-    	this.renderer.render(this.scene, this.camera);
-	}
-    
+    this.renderer.render(this.scene, this.camera);
+
     if (callback) {
         setTimeout(callback, 33);
     }
 };
 
-// Move the Planets
-// Game.prototype.movePlanets = function(frame, frame2){
-	// orbiter.position.x = currentBallPos.x + diameter*Math.cos(frame);
-	// orbiter.position.y = currentBallPos.y - diameter*Math.sin(frame);
-    // orbiter.position.z = diameter*Math.sin(frame);
-    // if(orbiters.length > 0){
-    	// for(orb in orbiters){
-    		// var speed = orbiters.length-orb;
-    		// orbiters[orb].position.x = currentBallPos.x + (orb*0.5)*diameter*Math.cos(planets[orb].speed*(0.01)*frame);
-			// orbiters[orb].position.y = currentBallPos.y - (orb*0.5)*diameter*Math.sin(planets[orb].speed*(0.01)*frame);
-    		// orbiters[orb].position.z =  15*Math.sin(orb*(0.1)*frame);
-    		// //orbiters[orb].rotation.y =  planets[orb].speed*frame*0.1;
-    		// planets[orb].uniform.lightsource.value = new THREE.Vector3(currentBallPos.x - orbiters[orb].position.x, currentBallPos.y - orbiters[orb].position.y, currentBallPos.z - orbiters[orb].position.z);
-    		
-    	// }
-    // }
-    // for (ballIndex in this.ballMeshes){
-    	// this.ballMeshes[ballIndex].rotation.y = frame*0.1;
-    // }
-    
-    // paddleUnis.paddle1.lightsource.value = new THREE.Vector3(currentBallPos.x - this.players[0].position.x, currentBallPos.y- this.players[0].position.y, currentBallPos.z- this.players[0].position.z);
-	// paddleUnis.paddle2.lightsource.value = new THREE.Vector3(currentBallPos.x- this.players[1].position.x, currentBallPos.y- this.players[1].position.y, currentBallPos.z- this.players[1].position.z);
-	// //paddleUnis.top.lightsource.value = new THREE.Vector3(currentBallPos.x, currentBallPos.y - field.width/2, currentBallPos.z);
-	// //paddleUnis.bottom.lightsource.value = new THREE.Vector3(currentBallPos.x, currentBallPos.y + field.width/2, currentBallPos.z);
-	
-// };
 Game.prototype.JL2THREE = function(target, pos, dir) {
 	var position = new THREE.Matrix4();
 	position.setTranslation(pos[0], pos[1], pos[2])
@@ -595,5 +504,46 @@ Game.prototype.updateScores = function() {
         }
         
     }
-    
+	// Move the Planets
+	// Game.prototype.movePlanets = function(frame, frame2){
+		// orbiter.position.x = currentBallPos.x + diameter*Math.cos(frame);
+		// orbiter.position.y = currentBallPos.y - diameter*Math.sin(frame);
+	    // orbiter.position.z = diameter*Math.sin(frame);
+	    // if(orbiters.length > 0){
+	    	// for(orb in orbiters){
+	    		// var speed = orbiters.length-orb;
+	    		// orbiters[orb].position.x = currentBallPos.x + (orb*0.5)*diameter*Math.cos(planets[orb].speed*(0.01)*frame);
+				// orbiters[orb].position.y = currentBallPos.y - (orb*0.5)*diameter*Math.sin(planets[orb].speed*(0.01)*frame);
+	    		// orbiters[orb].position.z =  15*Math.sin(orb*(0.1)*frame);
+	    		// //orbiters[orb].rotation.y =  planets[orb].speed*frame*0.1;
+	    		// planets[orb].uniform.lightsource.value = new THREE.Vector3(currentBallPos.x - orbiters[orb].position.x, currentBallPos.y - orbiters[orb].position.y, currentBallPos.z - orbiters[orb].position.z);
+
+	    	// }
+	    // }
+	    // for (ballIndex in this.ballMeshes){
+	    	// this.ballMeshes[ballIndex].rotation.y = frame*0.1;
+	    // }
+
+	    // paddleUnis.paddle1.lightsource.value = new THREE.Vector3(currentBallPos.x - this.players[0].position.x, currentBallPos.y- this.players[0].position.y, currentBallPos.z- this.players[0].position.z);
+		// paddleUnis.paddle2.lightsource.value = new THREE.Vector3(currentBallPos.x- this.players[1].position.x, currentBallPos.y- this.players[1].position.y, currentBallPos.z- this.players[1].position.z);
+		// //paddleUnis.top.lightsource.value = new THREE.Vector3(currentBallPos.x, currentBallPos.y - field.width/2, currentBallPos.z);
+		// //paddleUnis.bottom.lightsource.value = new THREE.Vector3(currentBallPos.x, currentBallPos.y + field.width/2, currentBallPos.z);
+
+	// };    
+	// --- Lights
+
+	//var pointLight = new THREE.PointLight( 0x2D2D2D );
+
+	//Game.prototype.initObjects = function(position){
+
+		//this.noiseMaterial = new THREE.MeshShaderMaterial({
+		//	uniforms:		 this.textureUnis,
+		//	vertexShader:   $('#noisevertex').text(),
+		//	fragmentShader: $('#noisefragment').text(),
+		//	lights: false
+		//});
+
+		// make the gnawrly background
+		//this.noiseMap  = new THREE.WebGLRenderTarget( this.container.clientWidth, this.container.clientHeight, { minFilter: THREE.LinearMipMapLinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat } );
+	//};
 };

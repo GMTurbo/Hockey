@@ -15,6 +15,10 @@ var jball;
 var then = new Date().getTime();
 var effect;
 
+//audio
+
+//buzz.defaults.formats = [ 'ogg', 'mp3' ];
+
 var winnerScore = 5;
 var finished = false;
 
