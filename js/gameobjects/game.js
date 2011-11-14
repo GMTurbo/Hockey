@@ -2,30 +2,22 @@
 function Game(container) {
     this.container = container;
     this.players = [];
-    this.prevY = 0;
+    this.prevY = 0, this.prevX=0;
     this.mouseX = 0;
     this.mouseY = 0;
-	
-	this.allowZoom = false;
-	
-	// demo
+
+    this.allowZoom = false;
+
+    // demo
     this.mode = {
         player1: false,
         player2: false,
         demo: true
     };
-    
-    this.textureUnis = {
-		time:  { type: "f", value: 1.0 },
-		uSpeed:  { type: "f", value: 0.2 },
-		scale: { type: "v2", value: new THREE.Vector2( 1, 1 ) },
-		color1: { type: "f", value: 2.1},
-		color2: { type: "f", value: 1.0}
-	};
 
-    // menu options        
-    this.showMenu = true; // i'll use this guy to pause the game too
-    //document.getElementById('ortho').checked = true;
+    // menu options
+    this.showMenu = true;
+
     // Initate Three.js, the 3d engine
     this.scene = new THREE.Scene();
 
@@ -34,33 +26,39 @@ function Game(container) {
     this.prepareScene();
 
     this.updateScores();
-	
-    this.renderer = new THREE.WebGLRenderer({antialias:true});
+
+    this.renderer = new THREE.WebGLRenderer({
+        antialias: true
+    });
     this.renderer.setSize(container.clientWidth, container.clientHeight);
+
     // Add the renderer to the DOM
     container.appendChild(this.renderer.domElement);
 }
 
 Game.prototype.updateGameSpeed = function(speed) {
-	gamespeed = speed;
-	var playerIndex;
+    gamespeed = speed;
+    var playerIndex;
     for (playerIndex in this.players) {
         this.players[playerIndex].speed = speed;
     }
-    if(typeof this.balls[0] !== "undefined"){
-        var directionx = this.balls[0].speed.x > 0 ? 1 : -1;
-        var directiony = this.balls[0].speed.y > 0 ? 1 : -1;
-        this.balls[0].speed = { x: directionx * speed, y: directiony * speed };
+    if (typeof this.balls[0] !== "undefined") {
+        var directionx = this.balls[0].speed.x > 0 ? 1: -1;
+        var directiony = this.balls[0].speed.y > 0 ? 1: -1;
+        this.balls[0].speed = {
+            x: directionx * speed,
+            y: directiony * speed
+        };
     }
 };
 
-Game.prototype.updateAI = function(){
-	this.players[0].human = (this.mode.player1 || this.mode.player2);
-	this.players[1].human = this.mode.player2;
+Game.prototype.updateAI = function() {
+    this.players[0].human = (this.mode.player1 || this.mode.player2);
+    this.players[1].human = this.mode.player2;
 };
 
 Game.prototype.newGame = function() {
-	finished = false;
+    finished = false;
     this.playerFailed(playerIndex);
     this.removeBalls();
     var positions = {
@@ -73,7 +71,7 @@ Game.prototype.newGame = function() {
 };
 
 Game.prototype.resetScores = function(positions) {
-	finished = false;
+    finished = false;
     if (typeof positions === "undefined") {
         for (playerIndex in this.players) {
             this.players[playerIndex].reset();
@@ -89,30 +87,36 @@ Game.prototype.resetScores = function(positions) {
 
 Game.prototype.prepareEvents = function() {
 
+	//keypress events
     document.addEventListener('keydown', (function(data) {
-		event.preventDefault();
-        if(!data.shiftKey){
-        	if (data.keyCode !== 27 ){
-           		if (!this.mode.demo){
-            	    this.players[0].handleKeyCode(data.keyCode);
-            	}
-        	}else{
-            	this.showMenu = !this.showMenu;
-            	this.toggleMenu(this.showMenu);
-        	}
+        event.preventDefault();
+        if (!data.shiftKey) {
+            if (data.keyCode !== 27) {
+                if (!this.mode.demo) {
+                    this.players[0].handleKeyCode(data.keyCode);
+                }
+            } else {
+                this.showMenu = !this.showMenu;
+                this.toggleMenu(this.showMenu);
+            }
         }
     }).bind(this));
 
+	//mousemove
     document.addEventListener('mousemove', (function(data) {
-		event.preventDefault();
+        event.preventDefault();
         if (!data.shiftKey) {
             if (this.prevY == 0) {
                 this.prevY = data.clientY;
             }
+			if (this.prevX == 0) {
+                this.prevY = data.clientX;
+            }
             if (this.mode.player2) {
-                this.players[1].handleKeyCode(this.prevY > data.clientY ? 38 : 40);
+                this.players[1].handleKeyCode(this.prevY > data.clientY ? 38: 40, this.prevX > data.clientX ? 39 : 37);
             }
             this.prevY = data.clientY;
+			this.prevX = data.clientX;
         } else {
             this.mouseX = (event.clientX - window.innerWidth / 2);
             this.mouseY = (event.clientY - window.innerHeight / 2);
@@ -124,7 +128,7 @@ Game.prototype.toggleMenu = function(toggle) {
     if (!toggle) {
         $('#menuid').addClass("hide");
     } else {
-    	//zoomCamera.position.z = 700;
+        //zoomCamera.position.z = 700;
         $('#menuid').removeClass("hide");
     }
 };
@@ -134,92 +138,109 @@ Game.prototype.prepareGameObjects = function() {
     this.players = [new Player('Player', -field.width / 2, 0), new Player('Computer', field.width / 2, 0)];
 };
 
-var quadTarget, orbiter;
-
 // This method prepares all the objects that needs to be drawn to the scene
 Game.prototype.prepareScene = function() {
 
-    this.camera = new THREE.Camera(45, this.container.clientWidth / this.container.clientHeight, 1, 2000);
+    this.camera = new THREE.Camera(45, 16/9, 1, 4000);
     this.originalCameraProject = this.camera.projectionMatrix;
-    this.camera.projectionMatrix = THREE.Matrix4.makeOrtho(-this.container.clientWidth, this.container.clientWidth, this.container.clientHeight, -this.container.clientHeight, 1, 2000);
+    //this.camera.projectionMatrix = THREE.Matrix4.makeOrtho( - this.container.clientWidth, this.container.clientWidth, this.container.clientHeight, -this.container.clientHeight, -4000, 10000);
     this.camera.position.y = 0;
-    this.camera.position.z = 1000;
-	this.camera.up.set(0,0,1); // Jankity way to rotate the board.  Not a great way in general
+    this.camera.position.z = 1200;
+
+	// Jankity way to rotate the board.  Not a great way in general
+    //this.camera.up.set(0, 0, 1);
+    
     //0x202020
     this.scene.addLight(new THREE.AmbientLight(0x202020));
-	
+
     // Set a box around the play field 0x00cc00
-	
-	//Point Light for messing with the background surface		
-	this.pointLight = new THREE.PointLight( 0xffffff );
-	this.pointLight.intensity = 3;
-	this.scene.addLight( this.pointLight );
-	
-	//jiglib setup
-	system = jigLib.PhysicsSystem.getInstance();
-	//csystem = new jigLib.CollisionSystem();
-	system.setGravity([0,0,0,0]);//-120
-	system.setSolverType('ACCUMULATED');//FAST, NORMAL, ACCUMULATED
+    //Point Light for messing with the background surface		
+    this.pointLight = new THREE.PointLight(0xffffff);
+    this.pointLight.intensity = 3;
+    this.scene.addLight(this.pointLight);
 
-	// add long walls
-	
-	//Game.prototype.addWall = function(width, height, depth, positionX, positionY, positionZ, material)
-	this.addWall(field.width - 50, 5, 100, 0, -field.height/2, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
-	this.addWall(field.width - 50, 5, 100, 0, field.height/2, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
+    //jiglib setup
+    system = jigLib.PhysicsSystem.getInstance();
+    system.setGravity([0, 0, 0, 0]);
+    system.setSolverType('ACCUMULATED'); //FAST, NORMAL, ACCUMULATED
 
-	//add small walls
-	
-	var offset = 0; // use this to adjust the placement on the small walls
-	var wallHeight = 100; // use to extend length of small walls
-	
-	this.addWall(5, field.height/3 + wallHeight, 100, -field.width / 2 - offset, -field.height / 4, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
-	this.addWall(5, field.height/3 + wallHeight, 100, -field.width / 2 - offset, field.height / 4, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
-	this.addWall(5, field.height/3 + wallHeight, 100, field.width / 2 + offset, -field.height / 4, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
-	this.addWall(5, field.height/3 + wallHeight, 100, field.width / 2 + offset, field.height / 4, 0, new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
-	
-    materials = [new THREE.MeshLambertMaterial({ color: 0xFFFFFF, wireframe: true, opacity: 0.5 }),
-    	                 new THREE.MeshBasicMaterial({ color: 0xFFFFFF, wireframe: true, opacity: 0.5 })];
-	
-    //var image = new Image();
-	var plane = new THREE.PlaneGeometry( 1.2*field.width, 1.2*field.height );
-    quadTarget = new THREE.Mesh( plane, new THREE.MeshPhongMaterial( { ambient: Math.random()*0xfffff, color: Math.random()*0xfffff, specular: Math.random()*0xfffff, shininess: 100 } ) );
-	quadTarget.position.z = -80;
-	this.scene.addObject( quadTarget );
+	// Maybe add a floor plane here?
 
-	//var paddlematerial1 = [
-      //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}), // right
-        //        new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}), // left
-      //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}), //top
-      //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}), // bottom
-      //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}), // back
-      //          new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("textures/paddle.jpg")}) // front
-       //			//shaderMaterial
-       //];
+    // add long walls
+    //Game.prototype.addWall = function(width, height, depth, positionX, positionY, positionZ, material)
+    this.addWall(1.2*field.width, 15, 200, 0, -field.height / 2, 0, new THREE.MeshBasicMaterial({
+        color: Math.random() * 0xfffff
+    }));
+    this.addWall(1.2*field.width, 15, 200, 0, field.height / 2, 0, new THREE.MeshBasicMaterial({
+        color: Math.random() * 0xfffff
+    }));
+
+    //add small walls
+    var offset = 90;
+    // use this to adjust the placement on the small walls
+
+    var wallHeight = 40;
+    // use to extend length of small walls
+
+	//this.addWall = function(width, height, depth, positionX, positionY, positionZ, material) 
+    // this.addWall(15, field.height / 3 + wallHeight, 200, -field.width / 2 - offset, -field.height / 4, 0, new THREE.MeshBasicMaterial({
+    //         color: Math.random() * 0xfffff
+    //     }));
+    //     this.addWall(15, field.height / 3 + wallHeight, 200, -field.width / 2 - offset, field.height / 4, 0, new THREE.MeshBasicMaterial({
+    //         color: Math.random() * 0xfffff
+    //     }));
+    //     this.addWall(15, field.height / 3 + wallHeight, 200, field.width / 2 + offset, -field.height / 4, 0, new THREE.MeshBasicMaterial({
+    //         color: Math.random() * 0xfffff
+    //     }));
+    //     this.addWall(15, field.height / 3 + wallHeight, 200, field.width / 2 + offset, field.height / 4, 0, new THREE.MeshBasicMaterial({
+    //         color: Math.random() * 0xfffff
+    //     }));
+
+	this.addWall(15, field.height / 3 + wallHeight, 200, -field.width / 2 - offset, -field.height / 4, 0, new THREE.MeshBasicMaterial({
+        color: Math.random() * 0xfffff
+    }));
+    this.addWall(15, field.height / 3 + wallHeight, 200, -field.width / 2 - offset, field.height / 4, 0, new THREE.MeshBasicMaterial({
+        color: Math.random() * 0xfffff
+    }));
+    this.addWall(15, field.height / 3 + wallHeight, 200, field.width / 2 + offset, -field.height / 4, 0, new THREE.MeshBasicMaterial({
+        color: Math.random() * 0xfffff
+    }));
+    this.addWall(15, field.height / 3 + wallHeight, 200, field.width / 2 + offset, field.height / 4, 0, new THREE.MeshBasicMaterial({
+        color: Math.random() * 0xfffff
+    }));
+
+    var plane = new THREE.PlaneGeometry(1.2 * field.width, 1.2 * field.height);
+    quadTarget = new THREE.Mesh(plane, new THREE.MeshPhongMaterial({
+        ambient: Math.random() * 0xfffff,
+        color: Math.random() * 0xfffff,
+        specular: Math.random() * 0xfffff,
+        shininess: 100
+    }));
+
+    quadTarget.position.z = -80;
+    this.scene.addObject(quadTarget);
+
     // Prepare player objects
-    this.playerMeshes = []; // for players 0 to 1
+    this.playerMeshes = [];
+    // for players 0 to 1
     for (var playerIndex in this.players) {
         var player = this.players[playerIndex];
-		//shaderMaterial = new THREE.MeshShaderMaterial({
-		//	uniforms:		playerIndex == 0 ? paddleUnis.paddle1: paddleUnis.paddle2,
-		//	vertexShader:   $('#vs').text(),
-		//	fragmentShader: $('#fs').text()
-		//});
-		
-        //mesh = new THREE.Mesh(new THREE.CubeGeometry(player.thickness, player.height, player.width), new THREE.MeshBasicMaterial({ color: Math.random()*0xfffff}));
-		mesh = new THREE.Mesh(new THREE.SphereGeometry(35,35,35), new THREE.MeshBasicMaterial({color: Math.random()*0xffffff}))
+ 		var mesh = new THREE.Mesh(new THREE.SphereGeometry(35, 35, 35), new THREE.MeshBasicMaterial({
+            color: Math.random() * 0xffffff
+        }))
         mesh.position.x = player.position.x;
         mesh.position.y = player.position.y;
-        mesh.position.z = 0;
-		mesh.overdraw = true;
-		mesh.matrixAutoUpdate = false;
-		
-		paddles.push(new jigLib.JSphere(null, 35));
-		paddles[playerIndex].set_mass(50);//100
-		paddles[playerIndex].set_friction(0);
-		paddles[playerIndex].set_restitution(120);
-		paddles[playerIndex].moveTo([player.position.x, player.position.y, 0, 0]);
-		paddles[playerIndex].set_movable(false);
-	    system.addBody(paddles[playerIndex]);
+        mesh.position.z = 5;
+        mesh.overdraw = true;
+        mesh.matrixAutoUpdate = false;
+
+        paddles.push(new jigLib.JSphere(null, 35));
+        paddles[playerIndex].set_mass(50);
+        paddles[playerIndex].set_friction(0);
+        paddles[playerIndex].set_restitution(120);
+        paddles[playerIndex].moveTo([player.position.x, player.position.y, 5, 0]);
+        paddles[playerIndex].set_movable(false);
+        system.addBody(paddles[playerIndex]);
 
         this.scene.addObject(mesh);
         this.playerMeshes.push(mesh);
@@ -230,118 +251,103 @@ Game.prototype.prepareScene = function() {
 
 };
 
-Game.prototype.addWall = function(width, height, depth, positionX, positionY, positionZ, material){
-	
-	// THREE.CubeGeometry(width, height, depth)
-	ThreeMesh = new THREE.Mesh(new THREE.CubeGeometry(width, height, depth), material);
-	ThreeMesh.position.set(positionX, positionY, positionZ);
+Game.prototype.addWall = function(width, height, depth, positionX, positionY, positionZ, material) {
+
+    // THREE.CubeGeometry(width, height, depth)
+    ThreeMesh = new THREE.Mesh(new THREE.CubeGeometry(width, height, depth), material);
+    ThreeMesh.position.set(positionX, positionY, positionZ);
     this.scene.addObject(ThreeMesh);
-	
-	//JBox(skin, width, depth, height)
-	var physicsObj = new jigLib.JBox(null, width, depth, height);
-	physicsObj.set_friction(10);
-	physicsObj.moveTo([positionX, positionY, positionZ, 0]);
-	physicsObj.set_movable(false);
-	physicsObj.set_restitution(100);
-	system.addBody(physicsObj);
+
+    //JBox(skin, width, depth, height)
+    var physicsObj = new jigLib.JBox(null, width, depth, height);
+    physicsObj.set_friction(10);
+    physicsObj.moveTo([positionX, positionY, positionZ, 0]);
+    physicsObj.set_movable(false);
+    physicsObj.set_restitution(200);
+    system.addBody(physicsObj);
 };
 
-var currentBallPos = {x:0, y:0, rate: 1.0}
+
 var oldPos = new THREE.Vector3(), currentPos = new THREE.Vector3();
+
+//Sychronize the physics models with the THREE Meshes
 Game.prototype.updateScene = function() {
 	
-	if(this.showMenu){
-		then = new Date().getTime();
-		return;
-	}
-	now = new Date().getTime();
-	system.integrate((now - then) / 70);//400
-	then = now;
-    if (!this.showMenu && !finished) {
-        for (ballIndex in this.balls) {
-            if (cameraStyle.ortho) {
-                this.camera.projectionMatrix = THREE.Matrix4.makeOrtho(-this.container.clientWidth, this.container.clientWidth, this.container.clientHeight, -this.container.clientHeight, 1, 2000);
-            } else {
-                this.camera.projectionMatrix = this.originalCameraProject;
-                this.camera.position.z = 2000;
-            }
-            this.camera.position.x += (this.mouseX - this.camera.position.x) * .1;
-            this.camera.position.y += (-this.mouseY - this.camera.position.y) * .1;
-            var ball = this.balls[ballIndex];
+	// if menu is showing, pause the game by returning early
+    if (this.showMenu) {
+        then = new Date().getTime();
+        return;
+    }
 
-            // Let the ball do one step
-            ball.move(this.players);
-			//jball.setVelocity([2*ball.speed.x,0,0,0]);
-            if (this.mode.player1 || this.mode.demo) {
-                this.moveComputerPlayer();
-            }
-
-            if (this.mode.demo) {
-                this.movePlayer1();
-            }
-
-            // See if any of the balls was behind any of the players...
-            // And if so, give all the other players a point.
-            for (playerIndex in this.players) {
-                this.players[playerIndex].hitTest(ball, function() {
-                    this.playerFailed(playerIndex);
-                   	this.players[0].resetPosition(-field.width / 2, 0);
-                   	this.players[1].resetPosition(field.width / 2, 0);
-                    this.removeBalls();
-                    setTimeout(this.resetBalls.bind(this), 2000);
-                } .bind(this));
-            }
-
-            currentBallPos = {
-				x: ball.position.x,
-				y: ball.position.y,
-				rate: ball.speedPer
-            };
-            
+	//update time step for physics engine
+    now = new Date().getTime();
+    system.integrate((now - then) / 70);
+    then = now;
+	
+	// if the game isn't over, keep rendering
+    if (!finished) {
+		
+		if (this.mode.player1 || this.mode.demo) {
+            this.moveComputerPlayer();
         }
 
-        // Set the player's positions
+        if (this.mode.demo) {
+            this.movePlayer1();
+        }
+
+        // Synchronize the players positions
         for (playerIndex in this.players) {
             var player = this.players[playerIndex];
             var playerMesh = this.playerMeshes[playerIndex];
             playerMesh.position.y = player.position.y;
-			paddles[playerIndex].moveTo([this.playerMeshes[playerIndex].position.x, this.playerMeshes[playerIndex].position.y, this.playerMeshes[playerIndex].position.z, 0]);
+            paddles[playerIndex].moveTo([playerMesh.position.x, playerMesh.position.y, playerMesh.position.z, 0]);
+        }
+
+
+        for (var i in this.playerMeshes) {
+			
+			// check for collisions
+            if (paddles[i].collisions.length > 0) {
+                boing.play(); // play sound
+                array = jball.get_currentState().position; // get the current physics ball location
+                currentPos = new THREE.Vector3(array[0], array[1], array[2]); // match the mesh to the ball
+                diff = currentPos.subSelf(oldPos); // get the vector of the ball 
+                mag = diff.length(); // store the lenght (get speed)
+                diffn = diff.normalize(); // normalize vector
+				
+				// try to keep the ball moving
+                var scaleMag = function(oldMag) {
+                    if (oldMag < 10) return 25;
+                    if (oldMag > 25) return 25;
+                    return oldMag;
+                };
+
+                mag = scaleMag(mag); // scale the mag
+                jball.applyBodyWorldImpulse([diffn.x * mag, diffn.y * mag, 0], [0, 0, 0]) // add a force to the ball to keep it going
+            }
+
+			//sync meshes
+            this.JL2THREE(this.playerMeshes[i], paddles[i].get_currentState().position, paddles[i].get_currentState().get_orientation().glmatrix);
         }
 		
-	
-	for(var i in this.playerMeshes){
-		if(paddles[i].collisions.length> 0){
-			//jball.addBodyTorque([paddles[i].collisions[0].dirToBody[0]*10,35,0]);
-			array = jball.get_currentState().position;
-			currentPos = new THREE.Vector3(array[0],array[1],array[2]);
-			diff = currentPos.subSelf(oldPos);
-			mag = diff.length();
-			diffn = diff.normalize();
-			var scaleMag = function(oldMag){
-				if(oldMag < 6) return 60;
-				if(oldMag > 30) return 20;
-				return oldMag;
-			};
-			mag = scaleMag(mag);
-			jball.applyBodyWorldImpulse([diffn.x * mag, diffn.y * mag, 0], [0,0,0])
-		}
-		this.JL2THREE(this.playerMeshes[i], paddles[i].get_currentState().position, paddles[i].get_currentState().get_orientation().glmatrix);
-	}
-	
-	for(var i in this.ballMeshes){
-		this.JL2THREE(this.ballMeshes[i], jball.get_currentState().position, jball.get_currentState().get_orientation().glmatrix);
-	}
-	
-	this.pointLight.position = new THREE.Vector3(jball.get_currentState().position[0],jball.get_currentState().position[1], 0);
-	
-    }else if(finished){
-    		this.showMenu = true;
-            this.toggleMenu(true);
-    }
+		//sync ball
+        for (var i in this.ballMeshes) {
+            this.JL2THREE(this.ballMeshes[i], jball.get_currentState().position, jball.get_currentState().get_orientation().glmatrix);
+        }
+		
+		//move light
+        this.pointLight.position = new THREE.Vector3(jball.get_currentState().position[0], jball.get_currentState().position[1], 0);
 
-	oldPos.set(jball.get_currentState().position[0], jball.get_currentState().position[1], jball.get_currentState().position[2]);
+    } else if (finished) {
+        this.showMenu = true;
+        this.toggleMenu(true);
+    }
+	
+	//record the position of the physics ball
+    oldPos.set(jball.get_currentState().position[0], jball.get_currentState().position[1], jball.get_currentState().position[2]);
 };
 
+// AI Move Player 2
 Game.prototype.moveComputerPlayer = function() {
     var player = this.players[1];
     if (this.balls.length == 0) {
@@ -349,14 +355,15 @@ Game.prototype.moveComputerPlayer = function() {
     }
     if (this.players[1].position.y > jball.get_currentState().position[1]) {
         //player.handleKeyCode(40);
-		player.position.y = jball.get_currentState().position[1];
+        player.position.y = jball.get_currentState().position[1];
     }
     else {
         //player.handleKeyCode(38);
-		player.position.y = jball.get_currentState().position[1];
+        player.position.y = jball.get_currentState().position[1];
     }
 };
 
+//AI Move Player 1
 Game.prototype.movePlayer1 = function() {
     var player = this.players[0];
     if (this.balls.length == 0) {
@@ -364,10 +371,10 @@ Game.prototype.movePlayer1 = function() {
     }
     if (this.players[0].position.y > jball.get_currentState().position[1]) {
         //player.handleKeyCode(40);
-		player.position.y = jball.get_currentState().position[1];
+        player.position.y = jball.get_currentState().position[1];
     } else {
         //player.handleKeyCode(38);
-		player.position.y = jball.get_currentState().position[1];
+        player.position.y = jball.get_currentState().position[1];
     }
 };
 
@@ -378,83 +385,39 @@ Game.prototype.removeBalls = function() {
     }
 };
 
-//uniform shader variables for the sun object
-var sununiforms = {
-		amplitude: {
-			type: 'f', // a float
-			value: 1
-		},
-		lightsource:
-		{
-			type: 'v3', // a vec3
-			value: []
-		},
-		image:{ type: "t", value: 0, texture: THREE.ImageUtils.loadTexture("http://4.bp.blogspot.com/-oMrdziPLqog/TdOsWsmikqI/AAAAAAAAAQA/lGstIyOuRuc/s1600/sun+texture.png")}
-	};
-//attributes shader variables for the sun	
-var attributes = {
-	displacement: {
-		type: 'f', // a float
-		value: 1 // an empty array
-	}
-};
-
-// heat property for the background shader texture
-var properties = {
-		heat: 0.0185
-	};
-
-// control properties from the front drop-down menu
-var controlsProps = {	
-	Color1: 0.7,
-    Color2: 1.0,
-	ShaderSpeed: 0.005,
-	GameSpeed: 10,
-	GameMode: 3,
-	CameraMode: 1
-};
-
 Game.prototype.resetBalls = function() {
 
     this.balls = [Ball.getBall()];
     this.ballMeshes = [];
-	//csystem.removeCollisionBody(jball);
     for (ballIndex in this.balls) {
         this.initializeBall(this.balls[ballIndex]);
     }
 };
 
-Game.prototype.initializeBall = function(ball){
-	
-	//ball = this.balls[ballIndex];
+Game.prototype.initializeBall = function(ball) {
+    var materials = [new THREE.MeshLambertMaterial({
+        color: 0x00ff00
+    })];
 
-    var materials = [new THREE.MeshLambertMaterial({ color: 0x00ff00 })];
-	var shaderMaterial = new THREE.MeshShaderMaterial({
-		uniforms:       sununiforms,
-		attributes:     attributes,
-		vertexShader:   $('#vs').text(),
-		fragmentShader: $('#fs').text()
-	});
-	
-	var sphere = new THREE.SphereGeometry(20, 20, 20);
-    var mesh = new THREE.Mesh(sphere, shaderMaterial);
+    var sphere = new THREE.SphereGeometry(20, 20, 20);
+    var mesh = new THREE.Mesh(sphere, materials);
 
     mesh.position.x = ball.position.x;
     mesh.position.y = ball.position.y;
-    mesh.position.z = 0;
-	mesh.overdraw = true;
-	mesh.matrixAutoUpdate = false;
-	
-	jball=new jigLib.JSphere(null,20);
-	jball.set_mass(1);
-	jball.set_friction(0);
-	jball.set_restitution(100);
-	jball.moveTo([ball.position.x,ball.position.y,0,0]);
-	jball.set_movable(true);
-	jball.set_rotVelocityDamping([0.98,0.98,0.98]);
-	jball.set_linVelocityDamping([0.992,0.995,0.995]);
-	system.addBody(jball);
-	jball.setVelocity([50,20,0,0]);
+    mesh.position.z = 5;
+    mesh.overdraw = true;
+    mesh.matrixAutoUpdate = false;
+
+    jball = new jigLib.JSphere(null, 20);
+    jball.set_mass(1);
+    jball.set_friction(0);
+    jball.set_restitution(200);
+    jball.moveTo([ball.position.x, ball.position.y, 5, 0]);
+    jball.set_movable(true);
+    jball.set_rotVelocityDamping([0.995, 0.995, 0.995]);
+    jball.set_linVelocityDamping([0.993, 0.995, 0.995]);
+    system.addBody(jball);
+    jball.setVelocity([50, 20, 0, 0]);
 
     this.scene.addObject(mesh);
     this.ballMeshes.push(mesh);
@@ -467,14 +430,25 @@ Game.prototype.playerFailed = function(player) {
     }
     this.updateScores();
 };
+Game.prototype.updateCamera = function(x,y,dim){
+	switch(dim){
+		case 'x':
+			this.camera.position.x += ( -2*x - this.camera.position.x );	
+		break;
+		case 'y':
+			this.camera.position.y += ( -2*y - this.camera.position.y );
+		break;
+	}
+	this.renderer.render(this.scene, this.camera);
+}
 
 // This method causes the scene to be re-rendered.
 Game.prototype.render = function(callback) {
 
-	this.updateAI();
+    //this.updateAI();
     this.updateScene();
 
-	//render
+    //render
     this.renderer.render(this.scene, this.camera);
 
     if (callback) {
@@ -483,12 +457,12 @@ Game.prototype.render = function(callback) {
 };
 
 Game.prototype.JL2THREE = function(target, pos, dir) {
-	var position = new THREE.Matrix4();
-	position.setTranslation(pos[0], pos[1], pos[2])
-	var rotate = new THREE.Matrix4(dir[0], dir[1], dir[2], dir[3], dir[4], dir[5], dir[6], dir[7], dir[8], dir[9], dir[10], dir[11], dir[12], dir[13], dir[14], dir[15]);
-	position.multiplySelf(rotate);
-	target.matrix = position;
-	target.update(false, true, this.camera);
+    var position = new THREE.Matrix4();
+    position.setTranslation(pos[0], pos[1], pos[2])
+    var rotate = new THREE.Matrix4(dir[0], dir[1], dir[2], dir[3], dir[4], dir[5], dir[6], dir[7], dir[8], dir[9], dir[10], dir[11], dir[12], dir[13], dir[14], dir[15]);
+    position.multiplySelf(rotate);
+    target.matrix = position;
+    target.update(false, true, this.camera);
 };
 
 Game.prototype.updateScores = function() {
@@ -496,54 +470,12 @@ Game.prototype.updateScores = function() {
     for (playerIndex in this.players) {
         var player = this.players[playerIndex];
         $('#scores').append('<div>' + player.name + '<span>' + player.score + '</span></div>');
-        if(player.score == winnerScore){
-        	$('#scores').empty();
-        	$('#scores').append('<div>' + " WINS"  + '<span>' + player.name + '</span></div>');
-        	finished = true;
-        	break;
+        if (player.score == winnerScore) {
+            $('#scores').empty();
+            $('#scores').append('<div>' + " WINS" + '<span>' + player.name + '</span></div>');
+            finished = true;
+            break;
         }
-        
     }
-	// Move the Planets
-	// Game.prototype.movePlanets = function(frame, frame2){
-		// orbiter.position.x = currentBallPos.x + diameter*Math.cos(frame);
-		// orbiter.position.y = currentBallPos.y - diameter*Math.sin(frame);
-	    // orbiter.position.z = diameter*Math.sin(frame);
-	    // if(orbiters.length > 0){
-	    	// for(orb in orbiters){
-	    		// var speed = orbiters.length-orb;
-	    		// orbiters[orb].position.x = currentBallPos.x + (orb*0.5)*diameter*Math.cos(planets[orb].speed*(0.01)*frame);
-				// orbiters[orb].position.y = currentBallPos.y - (orb*0.5)*diameter*Math.sin(planets[orb].speed*(0.01)*frame);
-	    		// orbiters[orb].position.z =  15*Math.sin(orb*(0.1)*frame);
-	    		// //orbiters[orb].rotation.y =  planets[orb].speed*frame*0.1;
-	    		// planets[orb].uniform.lightsource.value = new THREE.Vector3(currentBallPos.x - orbiters[orb].position.x, currentBallPos.y - orbiters[orb].position.y, currentBallPos.z - orbiters[orb].position.z);
-
-	    	// }
-	    // }
-	    // for (ballIndex in this.ballMeshes){
-	    	// this.ballMeshes[ballIndex].rotation.y = frame*0.1;
-	    // }
-
-	    // paddleUnis.paddle1.lightsource.value = new THREE.Vector3(currentBallPos.x - this.players[0].position.x, currentBallPos.y- this.players[0].position.y, currentBallPos.z- this.players[0].position.z);
-		// paddleUnis.paddle2.lightsource.value = new THREE.Vector3(currentBallPos.x- this.players[1].position.x, currentBallPos.y- this.players[1].position.y, currentBallPos.z- this.players[1].position.z);
-		// //paddleUnis.top.lightsource.value = new THREE.Vector3(currentBallPos.x, currentBallPos.y - field.width/2, currentBallPos.z);
-		// //paddleUnis.bottom.lightsource.value = new THREE.Vector3(currentBallPos.x, currentBallPos.y + field.width/2, currentBallPos.z);
-
-	// };    
-	// --- Lights
-
-	//var pointLight = new THREE.PointLight( 0x2D2D2D );
-
-	//Game.prototype.initObjects = function(position){
-
-		//this.noiseMaterial = new THREE.MeshShaderMaterial({
-		//	uniforms:		 this.textureUnis,
-		//	vertexShader:   $('#noisevertex').text(),
-		//	fragmentShader: $('#noisefragment').text(),
-		//	lights: false
-		//});
-
-		// make the gnawrly background
-		//this.noiseMap  = new THREE.WebGLRenderTarget( this.container.clientWidth, this.container.clientHeight, { minFilter: THREE.LinearMipMapLinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat } );
-	//};
 };
+

@@ -7,9 +7,9 @@ html, body {
 }
 #gamefield {
 	position: relative;
-	margin: 100px auto 0;
-    width: 700px;
-    height: 700px;
+	margin: 50px auto 0;
+    width: 1280px;
+    height: 720px;
     /*border: solid 10px rgba(0,255,0,0.2);*/
 	border: solid 10px rgba(0,249,255,0.5);
 }

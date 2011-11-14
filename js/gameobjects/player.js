@@ -14,17 +14,17 @@ function Player(name, startX, startY) {
 	//this.mesh = mesh;
 }
 
-Player.prototype.hitTest = function(ball, isHitCallback) {
-	if ((this.position.x < 0 && jball.get_currentState().position[0] <= this.position.x + this.thickness) || 
-			(this.position.x > 0 && jball.get_currentState().position[0] >= this.position.x - this.thickness)) {
-		if (jball.get_currentState().position[1] > this.position.y + this.height/2 ||
-			jball.get_currentState().position[1] < this.position.y - this.height/2) {
-			if(isHitCallback) {
-				isHitCallback();
-			}
-		}
-	}
-}
+// Player.prototype.hitTest = function(ball, isHitCallback) {
+// 	if ((this.position.x < 0 && jball.get_currentState().position[0] <= this.position.x + this.thickness) || 
+// 			(this.position.x > 0 && jball.get_currentState().position[0] >= this.position.x - this.thickness)) {
+// 		if (jball.get_currentState().position[1] > this.position.y + this.height/2 ||
+// 			jball.get_currentState().position[1] < this.position.y - this.height/2) {
+// 			if(isHitCallback) {
+// 				isHitCallback();
+// 			}
+// 		}
+// 	}
+// }
 
 Player.prototype.reset = function(startX,startY){
     this.score = 0;
@@ -51,7 +51,7 @@ Player.prototype.resetPosition = function(startX,startY){
 	//this.mesh.position.y = this.position.y;
 }
 
-Player.prototype.handleKeyCode = function(keyCode) {
+Player.prototype.handleKeyCode = function(keyCode, keyCode2) {
 	switch (keyCode) {
 		case 38:
 			if ((this.position.y + this.height/2) + this.speed < field.height/2) {
@@ -65,6 +65,24 @@ Player.prototype.handleKeyCode = function(keyCode) {
 				//this.mesh.position.y = this.position.y;
 			}
 		break;
+	}
+	
+	//possible solution for mouse move in 2d? 
+	if(typeof keyCode2 !== "undefined"){
+		switch (keyCode2) {
+			case 39:
+				if ((this.position.y + this.height/2) + this.speed < field.height/2) {
+					this.position.y += this.human ? 5*this.speed: this.speed;
+					//this.mesh.position.y = this.position.y;
+				}
+			break;
+			case 37:
+				if ((this.position.y - this.height/2) - this.speed > -field.height/2) {
+					this.position.y -= this.human ? 5*this.speed: this.speed;
+					//this.mesh.position.y = this.position.y;
+				}
+			break;
+		}
 	}
 }
 
