@@ -141,30 +141,27 @@ Game.prototype.prepareGameObjects = function() {
 // This method prepares all the objects that needs to be drawn to the scene
 Game.prototype.prepareScene = function() {
 
-    this.camera = new THREE.Camera(45, 16/9, 1, 4000);
-    this.originalCameraProject = this.camera.projectionMatrix;
-    //this.camera.projectionMatrix = THREE.Matrix4.makeOrtho( - this.container.clientWidth, this.container.clientWidth, this.container.clientHeight, -this.container.clientHeight, -4000, 10000);
-    this.camera.position.y = 0;
-    this.camera.position.z = 1200;
-
-	// Jankity way to rotate the board.  Not a great way in general
-    //this.camera.up.set(0, 0, 1);
-    
+    // setting up the camera
+    var aspect_ratio = this.container.clientWidth / this.container.clientHeight;
+    this.camera = new THREE.Camera(45, aspect_ratio, 1, 10000);
+    this.camera.position.set(0,0,2000);
+    var origin = new THREE.Vector3(0,0,0);
+//    this.camera.lookAt(origin);
+    this.camera.rotation.z = 45 * (Math.PI / 180);
     //0x202020
     this.scene.addLight(new THREE.AmbientLight(0x202020));
 
+    // Removed the point light as it was acting weird with the models
     // Set a box around the play field 0x00cc00
-    //Point Light for messing with the background surface		
-    this.pointLight = new THREE.PointLight(0xffffff);
-    this.pointLight.intensity = 3;
-    this.scene.addLight(this.pointLight);
+    //Point Light for messing with the background surface
+    // this.pointLight = new THREE.PointLight(0xffffff);
+    // this.pointLight.intensity = 3;
+    //this.scene.addLight(this.pointLight);
 
     //jiglib setup
     system = jigLib.PhysicsSystem.getInstance();
     system.setGravity([0, 0, 0, 0]);
     system.setSolverType('ACCUMULATED'); //FAST, NORMAL, ACCUMULATED
-
-	// Maybe add a floor plane here?
 
     // add long walls
     //Game.prototype.addWall = function(width, height, depth, positionX, positionY, positionZ, material)
@@ -181,20 +178,6 @@ Game.prototype.prepareScene = function() {
 
     var wallHeight = 40;
     // use to extend length of small walls
-
-	//this.addWall = function(width, height, depth, positionX, positionY, positionZ, material) 
-    // this.addWall(15, field.height / 3 + wallHeight, 200, -field.width / 2 - offset, -field.height / 4, 0, new THREE.MeshBasicMaterial({
-    //         color: Math.random() * 0xfffff
-    //     }));
-    //     this.addWall(15, field.height / 3 + wallHeight, 200, -field.width / 2 - offset, field.height / 4, 0, new THREE.MeshBasicMaterial({
-    //         color: Math.random() * 0xfffff
-    //     }));
-    //     this.addWall(15, field.height / 3 + wallHeight, 200, field.width / 2 + offset, -field.height / 4, 0, new THREE.MeshBasicMaterial({
-    //         color: Math.random() * 0xfffff
-    //     }));
-    //     this.addWall(15, field.height / 3 + wallHeight, 200, field.width / 2 + offset, field.height / 4, 0, new THREE.MeshBasicMaterial({
-    //         color: Math.random() * 0xfffff
-    //     }));
 
 	this.addWall(15, field.height / 3 + wallHeight, 200, -field.width / 2 - offset, -field.height / 4, 0, new THREE.MeshBasicMaterial({
         color: Math.random() * 0xfffff
@@ -218,7 +201,20 @@ Game.prototype.prepareScene = function() {
     }));
 
     quadTarget.position.z = -80;
-    this.scene.addObject(quadTarget);
+
+    // load the hockeytable model from the js file and load it into the scene.
+    // need to update position/scale to make everything coplanar (paddles/walls for physics engine/ball/etc)
+    var tempScene = this.scene
+    var jsonLoader = new THREE.JSONLoader();
+    jsonLoader.load( { model: "js/gameobjects/table.js", callback: function( geometry ) { createScene( tempScene, geometry) } } );
+    function createScene( scene, geometry ) {
+      geometry.materials[0][0].shading = THREE.FlatShading;
+      var mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial() );
+      mesh.position.set(520,-300,-600);
+      mesh.scale.set(16,16,19);
+      mesh.rotation.set(Math.PI/2,Math.PI/2,0);
+      scene.addObject(mesh);
+    }
 
     // Prepare player objects
     this.playerMeshes = [];
@@ -272,7 +268,7 @@ var oldPos = new THREE.Vector3(), currentPos = new THREE.Vector3();
 
 //Sychronize the physics models with the THREE Meshes
 Game.prototype.updateScene = function() {
-	
+
 	// if menu is showing, pause the game by returning early
     if (this.showMenu) {
         then = new Date().getTime();
@@ -283,10 +279,10 @@ Game.prototype.updateScene = function() {
     now = new Date().getTime();
     system.integrate((now - then) / 70);
     then = now;
-	
+
 	// if the game isn't over, keep rendering
     if (!finished) {
-		
+
 		if (this.mode.player1 || this.mode.demo) {
             this.moveComputerPlayer();
         }
@@ -305,16 +301,16 @@ Game.prototype.updateScene = function() {
 
 
         for (var i in this.playerMeshes) {
-			
+
 			// check for collisions
             if (paddles[i].collisions.length > 0) {
                 boing.play(); // play sound
                 array = jball.get_currentState().position; // get the current physics ball location
                 currentPos = new THREE.Vector3(array[0], array[1], array[2]); // match the mesh to the ball
-                diff = currentPos.subSelf(oldPos); // get the vector of the ball 
+                diff = currentPos.subSelf(oldPos); // get the vector of the ball
                 mag = diff.length(); // store the lenght (get speed)
                 diffn = diff.normalize(); // normalize vector
-				
+
 				// try to keep the ball moving
                 var scaleMag = function(oldMag) {
                     if (oldMag < 10) return 25;
@@ -329,20 +325,20 @@ Game.prototype.updateScene = function() {
 			//sync meshes
             this.JL2THREE(this.playerMeshes[i], paddles[i].get_currentState().position, paddles[i].get_currentState().get_orientation().glmatrix);
         }
-		
+
 		//sync ball
         for (var i in this.ballMeshes) {
             this.JL2THREE(this.ballMeshes[i], jball.get_currentState().position, jball.get_currentState().get_orientation().glmatrix);
         }
-		
+
 		//move light
-        this.pointLight.position = new THREE.Vector3(jball.get_currentState().position[0], jball.get_currentState().position[1], 0);
+        // this.pointLight.position = new THREE.Vector3(jball.get_currentState().position[0], jball.get_currentState().position[1], 0);
 
     } else if (finished) {
         this.showMenu = true;
         this.toggleMenu(true);
     }
-	
+
 	//record the position of the physics ball
     oldPos.set(jball.get_currentState().position[0], jball.get_currentState().position[1], jball.get_currentState().position[2]);
 };
@@ -433,13 +429,13 @@ Game.prototype.playerFailed = function(player) {
 Game.prototype.updateCamera = function(x,y,dim){
 	switch(dim){
 		case 'x':
-			this.camera.position.x += ( -2*x - this.camera.position.x );	
+			this.camera.position.x = 10*x;
 		break;
 		case 'y':
-			this.camera.position.y += ( -2*y - this.camera.position.y );
+			this.camera.position.y = 10*y;
 		break;
 	}
-	this.renderer.render(this.scene, this.camera);
+	// this.renderer.render(this.scene, this.camera);
 }
 
 // This method causes the scene to be re-rendered.
