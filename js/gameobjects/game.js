@@ -144,10 +144,9 @@ Game.prototype.prepareScene = function() {
     // setting up the camera
     var aspect_ratio = this.container.clientWidth / this.container.clientHeight;
     this.camera = new THREE.Camera(45, aspect_ratio, 1, 10000);
-    this.camera.position.set(0,0,2000);
+    this.camera.position.set(0,0,1100);
     var origin = new THREE.Vector3(0,0,0);
-//    this.camera.lookAt(origin);
-    this.camera.rotation.z = 45 * (Math.PI / 180);
+    this.camera.lookAt(origin);
     //0x202020
     this.scene.addLight(new THREE.AmbientLight(0x202020));
 
@@ -158,49 +157,59 @@ Game.prototype.prepareScene = function() {
     // this.pointLight.intensity = 3;
     //this.scene.addLight(this.pointLight);
 
+
+    // Created a point light above the table
+    var mainLight = new THREE.PointLight(0xffffff);
+    mainLight.position.set(0,0, 3000);
+    mainLight.intensity = 3;
+    this.scene.addLight(mainLight);
+
     //jiglib setup
     system = jigLib.PhysicsSystem.getInstance();
     system.setGravity([0, 0, 0, 0]);
     system.setSolverType('ACCUMULATED'); //FAST, NORMAL, ACCUMULATED
 
-    // add long walls
+    // add walls for physics collisions
+    // variables for walls
+
+    var longWallWidth = 1.2*field.width;
+    var longWallHeight = 5;
+    var longWallLength = 200;
+    var longWallX = 0;
+    var longWallY = field.height / 2;
+    var longWallZ = 0;
+
+    var smallWallWidth = 5;
+    var smallWallHeight = field.height / 3 + 60;
+    var smallWallLength = 200;
+    var smallWallX = field.width / 2 + 90;
+    var smallWallY = field.height / 4 + 60;
+    var smallWallZ = 0;
+
     //Game.prototype.addWall = function(width, height, depth, positionX, positionY, positionZ, material)
-    this.addWall(1.2*field.width, 15, 200, 0, -field.height / 2, 0, new THREE.MeshBasicMaterial({
+    // add long walls
+    this.addWall(longWallWidth, longWallHeight, longWallLength, longWallX, -longWallY, longWallZ, new THREE.MeshBasicMaterial({
         color: Math.random() * 0xfffff
     }));
-    this.addWall(1.2*field.width, 15, 200, 0, field.height / 2, 0, new THREE.MeshBasicMaterial({
+    this.addWall(longWallWidth, longWallHeight, longWallLength, longWallX, longWallY, longWallZ, new THREE.MeshBasicMaterial({
         color: Math.random() * 0xfffff
     }));
-
     //add small walls
-    var offset = 90;
-    // use this to adjust the placement on the small walls
-
-    var wallHeight = 40;
-    // use to extend length of small walls
-
-	this.addWall(15, field.height / 3 + wallHeight, 200, -field.width / 2 - offset, -field.height / 4, 0, new THREE.MeshBasicMaterial({
+	  this.addWall(smallWallWidth, smallWallHeight, smallWallLength, -smallWallX, -smallWallY, smallWallZ, new THREE.MeshBasicMaterial({
         color: Math.random() * 0xfffff
     }));
-    this.addWall(15, field.height / 3 + wallHeight, 200, -field.width / 2 - offset, field.height / 4, 0, new THREE.MeshBasicMaterial({
+    this.addWall(smallWallWidth, smallWallHeight, smallWallLength, -smallWallX, smallWallY, smallWallZ, new THREE.MeshBasicMaterial({
         color: Math.random() * 0xfffff
     }));
-    this.addWall(15, field.height / 3 + wallHeight, 200, field.width / 2 + offset, -field.height / 4, 0, new THREE.MeshBasicMaterial({
+    this.addWall(smallWallWidth, smallWallHeight, smallWallLength, smallWallX, -smallWallY, smallWallZ, new THREE.MeshBasicMaterial({
         color: Math.random() * 0xfffff
     }));
-    this.addWall(15, field.height / 3 + wallHeight, 200, field.width / 2 + offset, field.height / 4, 0, new THREE.MeshBasicMaterial({
+    this.addWall(smallWallWidth, smallWallHeight, smallWallLength, smallWallX, smallWallY, smallWallZ, new THREE.MeshBasicMaterial({
         color: Math.random() * 0xfffff
     }));
 
-    var plane = new THREE.PlaneGeometry(1.2 * field.width, 1.2 * field.height);
-    quadTarget = new THREE.Mesh(plane, new THREE.MeshPhongMaterial({
-        ambient: Math.random() * 0xfffff,
-        color: Math.random() * 0xfffff,
-        specular: Math.random() * 0xfffff,
-        shininess: 100
-    }));
+    // var plane = new THREE.PlaneGeometry(1.2 * field.width, 1.2 * field.height);
 
-    quadTarget.position.z = -80;
 
     // load the hockeytable model from the js file and load it into the scene.
     // need to update position/scale to make everything coplanar (paddles/walls for physics engine/ball/etc)
@@ -208,10 +217,10 @@ Game.prototype.prepareScene = function() {
     var jsonLoader = new THREE.JSONLoader();
     jsonLoader.load( { model: "js/gameobjects/table.js", callback: function( geometry ) { createScene( tempScene, geometry) } } );
     function createScene( scene, geometry ) {
-      geometry.materials[0][0].shading = THREE.FlatShading;
+      // geometry.materials[0][0].shading = THREE.FlatShading;
       var mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial() );
-      mesh.position.set(520,-300,-600);
-      mesh.scale.set(16,16,19);
+      mesh.position.set(520,-335,-600);
+      mesh.scale.set(17,16,19);
       mesh.rotation.set(Math.PI/2,Math.PI/2,0);
       scene.addObject(mesh);
     }
@@ -426,15 +435,20 @@ Game.prototype.playerFailed = function(player) {
     }
     this.updateScores();
 };
-Game.prototype.updateCamera = function(x,y,dim){
+Game.prototype.updateCamera = function(val,dim){
 	switch(dim){
 		case 'x':
-			this.camera.position.x = 10*x;
+			this.camera.position.x = 10*val;
 		break;
 		case 'y':
-			this.camera.position.y = 10*y;
+			this.camera.position.y = 10*val;
+		break;
+		case 'z':
+			this.camera.position.z = 1100 + 10*val;
 		break;
 	}
+	var origin = new THREE.Vector3(0,0,0);
+  this.camera.lookAt(origin);
 	// this.renderer.render(this.scene, this.camera);
 }
 

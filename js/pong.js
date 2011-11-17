@@ -60,7 +60,8 @@ var finished = false;
 	    GameMode: 3,
 	    CameraMode: 1,
 		cameraX: 0,
-		cameraY: 0
+		cameraY: 0,
+		cameraZ: 0
 	};
 
 	function showGUI(game) {
@@ -85,21 +86,23 @@ var finished = false;
 
 		//gui.add(controlsProps, 'ShaderSpeed').options(1,2,3,4,5);
 		//var f1 = gui.addFolder('Flow Field');
-		gui.add(controlProps, 'CameraMode').options( {'Orthographic': 1, 'Perspective': 2} ).onChange(function(newValue){
-			var val = parseInt(newValue,0);
-			cameraStyle = {
-				persp: val === 2,
-				ortho: val === 1
-			};
-		});
+    // gui.add(controlProps, 'CameraMode').options( {'Orthographic': 1, 'Perspective': 2} ).onChange(function(newValue){
+    //  var val = parseInt(newValue,0);
+    //  cameraStyle = {
+    //    persp: val === 2,
+    //    ortho: val === 1
+    //  };
+    // });
 		gui.add(controlProps, 'cameraX').min(-200).max(200).step(10).listen().onChange(function(newValue){
-			game.updateCamera(controlProps.cameraX, controlProps.cameraY, 'x');
+			game.updateCamera(controlProps.cameraX, 'x');
 		});
 		gui.add(controlProps, 'cameraY').min(-200).max(200).step(10).listen().onChange(function(newValue){
-			game.updateCamera(controlProps.cameraX, controlProps.cameraY, 'y');
+			game.updateCamera(controlProps.cameraY, 'y');
 		});
-
-		gui.close();
+		gui.add(controlProps, 'cameraZ').min(-200).max(200).step(10).listen().onChange(function(newValue){
+			game.updateCamera(controlProps.cameraZ, 'z');
+		});
+    // gui.close();
 	}
 
 })();
