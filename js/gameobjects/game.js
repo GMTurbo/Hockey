@@ -31,6 +31,7 @@ function Game(container) {
         antialias: true
     });
     this.renderer.setSize(container.clientWidth, container.clientHeight);
+    this.renderer.shadowMapEnabled = true;
 
     // Add the renderer to the DOM
     container.appendChild(this.renderer.domElement);
@@ -109,15 +110,15 @@ Game.prototype.prepareEvents = function() {
             if (this.prevY == 0) {
                 this.prevY = data.clientY;
             }
-			if (this.prevX == 0) {
+			      if (this.prevX == 0) {
                 this.prevY = data.clientX;
             }
             if (this.mode.player2) {
                 this.players[1].handleKeyCode(this.prevY > data.clientY ? 38: 40, this.prevX > data.clientX ? 39 : 37);
             }
             this.prevY = data.clientY;
-			this.prevX = data.clientX;
-        } else {
+			      this.prevX = data.clientX;
+          } else {
             this.mouseX = (event.clientX - window.innerWidth / 2);
             this.mouseY = (event.clientY - window.innerHeight / 2);
         }
@@ -147,21 +148,16 @@ Game.prototype.prepareScene = function() {
     this.camera.position.set(0,0,1100);
     var origin = new THREE.Vector3(0,0,0);
     this.camera.lookAt(origin);
-    //0x202020
-    this.scene.addLight(new THREE.AmbientLight(0x202020));
 
-    // Removed the point light as it was acting weird with the models
-    // Set a box around the play field 0x00cc00
-    //Point Light for messing with the background surface
-    // this.pointLight = new THREE.PointLight(0xffffff);
-    // this.pointLight.intensity = 3;
-    //this.scene.addLight(this.pointLight);
+    // create an ambient light so everything is lit somewhat
+    ambientLight = new THREE.AmbientLight();
+    this.scene.addLight(ambientLight);
 
-
-    // Created a point light above the table
-    var mainLight = new THREE.PointLight(0xffffff);
-    mainLight.position.set(0,0, 3000);
-    mainLight.intensity = 3;
+    //create a SpotLight so the top is completely lit and we can have shadows
+    var mainLight = new THREE.SpotLight();
+    mainLight.position.set(0,0, 900);
+    // mainLight.intensity = 1;
+    mainLight.castShadow = true;
     this.scene.addLight(mainLight);
 
     //jiglib setup
@@ -186,30 +182,15 @@ Game.prototype.prepareScene = function() {
     var smallWallY = field.height / 4 + 60;
     var smallWallZ = 0;
 
-    //Game.prototype.addWall = function(width, height, depth, positionX, positionY, positionZ, material)
+    //Game.prototype.addWall = function(width, height, depth, positionX, positionY, positionZ)
     // add long walls
-    this.addWall(longWallWidth, longWallHeight, longWallLength, longWallX, -longWallY, longWallZ, new THREE.MeshBasicMaterial({
-        color: Math.random() * 0xfffff
-    }));
-    this.addWall(longWallWidth, longWallHeight, longWallLength, longWallX, longWallY, longWallZ, new THREE.MeshBasicMaterial({
-        color: Math.random() * 0xfffff
-    }));
+    this.addWall(longWallWidth, longWallHeight, longWallLength, longWallX, -longWallY, longWallZ );
+    this.addWall(longWallWidth, longWallHeight, longWallLength, longWallX, longWallY, longWallZ);
     //add small walls
-	  this.addWall(smallWallWidth, smallWallHeight, smallWallLength, -smallWallX, -smallWallY, smallWallZ, new THREE.MeshBasicMaterial({
-        color: Math.random() * 0xfffff
-    }));
-    this.addWall(smallWallWidth, smallWallHeight, smallWallLength, -smallWallX, smallWallY, smallWallZ, new THREE.MeshBasicMaterial({
-        color: Math.random() * 0xfffff
-    }));
-    this.addWall(smallWallWidth, smallWallHeight, smallWallLength, smallWallX, -smallWallY, smallWallZ, new THREE.MeshBasicMaterial({
-        color: Math.random() * 0xfffff
-    }));
-    this.addWall(smallWallWidth, smallWallHeight, smallWallLength, smallWallX, smallWallY, smallWallZ, new THREE.MeshBasicMaterial({
-        color: Math.random() * 0xfffff
-    }));
-
-    // var plane = new THREE.PlaneGeometry(1.2 * field.width, 1.2 * field.height);
-
+	  this.addWall(smallWallWidth, smallWallHeight, smallWallLength, -smallWallX, -smallWallY, smallWallZ);
+    this.addWall(smallWallWidth, smallWallHeight, smallWallLength, -smallWallX, smallWallY, smallWallZ);
+    this.addWall(smallWallWidth, smallWallHeight, smallWallLength, smallWallX, -smallWallY, smallWallZ);
+    this.addWall(smallWallWidth, smallWallHeight, smallWallLength, smallWallX, smallWallY, smallWallZ);
 
     // load the hockeytable model from the js file and load it into the scene.
     // need to update position/scale to make everything coplanar (paddles/walls for physics engine/ball/etc)
@@ -222,20 +203,31 @@ Game.prototype.prepareScene = function() {
       mesh.position.set(520,-335,-600);
       mesh.scale.set(17,16,19);
       mesh.rotation.set(Math.PI/2,Math.PI/2,0);
+      mesh.receiveShadow = true;
+      mesh.castShadow = true;
       scene.addObject(mesh);
     }
+
+    // creating a floor plane
+    var floor = new THREE.Mesh(new THREE.PlaneGeometry(10000,10000, 100,100), new THREE.MeshBasicMaterial({
+      color: 0xffffff
+    }));
+    floor.position.set(0,0,-500);
+    floor.receiveShadow = true;
+    this.scene.addObject(floor);
 
     // Prepare player objects
     this.playerMeshes = [];
     // for players 0 to 1
     for (var playerIndex in this.players) {
         var player = this.players[playerIndex];
- 		var mesh = new THREE.Mesh(new THREE.SphereGeometry(35, 35, 35), new THREE.MeshBasicMaterial({
+        var cylinder = new THREE.CylinderGeometry(40, 40, 40, 5, 5, false);
+ 		    var mesh = new THREE.Mesh(cylinder, new THREE.MeshBasicMaterial({
             color: Math.random() * 0xffffff
-        }))
+        }));
         mesh.position.x = player.position.x;
         mesh.position.y = player.position.y;
-        mesh.position.z = 5;
+        mesh.position.z = -100;
         mesh.overdraw = true;
         mesh.matrixAutoUpdate = false;
 
@@ -243,7 +235,7 @@ Game.prototype.prepareScene = function() {
         paddles[playerIndex].set_mass(50);
         paddles[playerIndex].set_friction(0);
         paddles[playerIndex].set_restitution(120);
-        paddles[playerIndex].moveTo([player.position.x, player.position.y, 5, 0]);
+        paddles[playerIndex].moveTo([player.position.x, player.position.y, -100, 0]);
         paddles[playerIndex].set_movable(false);
         system.addBody(paddles[playerIndex]);
 
@@ -256,12 +248,15 @@ Game.prototype.prepareScene = function() {
 
 };
 
-Game.prototype.addWall = function(width, height, depth, positionX, positionY, positionZ, material) {
+Game.prototype.addWall = function(width, height, depth, positionX, positionY, positionZ) {
 
-    // THREE.CubeGeometry(width, height, depth)
-    ThreeMesh = new THREE.Mesh(new THREE.CubeGeometry(width, height, depth), material);
-    ThreeMesh.position.set(positionX, positionY, positionZ);
-    this.scene.addObject(ThreeMesh);
+    // uncomment these if you want to create visable walls in addition to the jiglib physics objs
+    // material = new THREE.MeshBasicMaterial({
+    //     color: Math.random() * 0xfffff
+    // })
+    // ThreeMesh = new THREE.Mesh(new THREE.CubeGeometry(width, height, depth), material);
+    // ThreeMesh.position.set(positionX, positionY, positionZ);
+    // this.scene.addObject(ThreeMesh);
 
     //JBox(skin, width, depth, height)
     var physicsObj = new jigLib.JBox(null, width, depth, height);
@@ -271,7 +266,6 @@ Game.prototype.addWall = function(width, height, depth, positionX, positionY, po
     physicsObj.set_restitution(200);
     system.addBody(physicsObj);
 };
-
 
 var oldPos = new THREE.Vector3(), currentPos = new THREE.Vector3();
 
@@ -401,15 +395,17 @@ Game.prototype.resetBalls = function() {
 
 Game.prototype.initializeBall = function(ball) {
     var materials = [new THREE.MeshLambertMaterial({
-        color: 0x00ff00
+        color: 0x000000
     })];
 
-    var sphere = new THREE.SphereGeometry(20, 20, 20);
-    var mesh = new THREE.Mesh(sphere, materials);
+    // var sphere = new THREE.Geometry(20, 20, 20);
+    var cylinder = new THREE.CylinderGeometry(20, 20, 20, 5, 5, false);
+    var mesh = new THREE.Mesh(cylinder, materials);
+    mesh.castShadow = true;
 
     mesh.position.x = ball.position.x;
     mesh.position.y = ball.position.y;
-    mesh.position.z = 5;
+    mesh.position.z = -100;
     mesh.overdraw = true;
     mesh.matrixAutoUpdate = false;
 
@@ -417,7 +413,7 @@ Game.prototype.initializeBall = function(ball) {
     jball.set_mass(1);
     jball.set_friction(0);
     jball.set_restitution(200);
-    jball.moveTo([ball.position.x, ball.position.y, 5, 0]);
+    jball.moveTo([ball.position.x, ball.position.y, -100, 0]);
     jball.set_movable(true);
     jball.set_rotVelocityDamping([0.995, 0.995, 0.995]);
     jball.set_linVelocityDamping([0.993, 0.995, 0.995]);
@@ -449,7 +445,6 @@ Game.prototype.updateCamera = function(val,dim){
 	}
 	var origin = new THREE.Vector3(0,0,0);
   this.camera.lookAt(origin);
-	// this.renderer.render(this.scene, this.camera);
 }
 
 // This method causes the scene to be re-rendered.
