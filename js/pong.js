@@ -5,13 +5,22 @@ var cameraStyle = {
 	persp: false,
 	ortho: true
 };
+var onField = function(point){
+	if(point.x > field.width || point.x < 0){
+		return false;
+	}
+	if(point.y > field.height || point.y < 0){
+		return false;
+	}
+	return true;
+};
 
 //jiglib stuff
 var system;
 var csystem;
 var paddles = [];
 var walls = [];
-var jball;
+var jball = null;
 var then = new Date().getTime();
 var effect;
 
@@ -22,7 +31,7 @@ var effect;
 
 //buzz.defaults.formats = [ 'ogg', 'mp3' ];
 
-var boing;
+var boing, yay, woohoo;
 var winnerScore = 5;
 var finished = false;
 
@@ -50,6 +59,10 @@ var finished = false;
 			//buzz.defaults.formats = [ 'mp3' ];
 			boing = new buzz.sound('sounds/clack.mp3');
 			boing.load();
+			yay = new buzz.sound('http://www.pacdv.com/sounds/voices/yay.wav');
+			yay.load();
+			woohoo = new buzz.sound('http://www.pacdv.com/sounds/voices/woohoo.wav');
+			woohoo.load();
 		}
 		//boing.autoload = true;
 	}
@@ -66,8 +79,13 @@ var finished = false;
 
 	function showGUI(game) {
 		var gui = new DAT.GUI();
-		DAT.GUI.autoPlace = true;
-
+		DAT.GUI.autoPlace = false;
+		
+		$gui	= $('#guidat');
+		$gui.css({
+			right: 'auto',
+			left: '40%'
+		});
 		//$("#uiContainer").append(gui.domElement);
 
 		gui.add(controlProps, 'GameSpeed').min(10).max(20).listen().onChange(function(newValue){
@@ -102,7 +120,8 @@ var finished = false;
 		gui.add(controlProps, 'cameraZ').min(-200).max(200).step(10).listen().onChange(function(newValue){
 			game.updateCamera(controlProps.cameraZ, 'z');
 		});
-    // gui.close();
+		
+    	gui.close();
 	}
 
 })();

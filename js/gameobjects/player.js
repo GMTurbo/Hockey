@@ -13,6 +13,22 @@ function Player(name, startX, startY) {
 	this.score = 0;
 }
 
+<<<<<<< HEAD
+=======
+Player.prototype.hitTest = function(ball, isHitCallback) {
+	if (ball.get_currentState().position[0] < -(field.width / 2 + 120)){
+		if(isHitCallback) {
+			isHitCallback(0);
+		}
+	}
+	if (ball.get_currentState().position[0] > field.width / 2 + 120){
+		if(isHitCallback) {
+			isHitCallback(1);
+		}
+	}
+}
+
+>>>>>>> Physics update
 Player.prototype.reset = function(startX,startY){
     this.score = 0;
     if(typeof startX !== "undefined"){
@@ -36,6 +52,7 @@ Player.prototype.resetPosition = function(startX,startY){
     this.position = { x: startX, y: startY };
 }
 
+<<<<<<< HEAD
 Player.prototype.handleKeyCode = function (keyCode, keyCode2) {
     if (keyCode !== "undefined") {
         switch (keyCode) {
@@ -85,10 +102,69 @@ Player.prototype.handleKeyCode = function (keyCode, keyCode2) {
                 break;
         }
     }
+=======
+Player.prototype.handleKeyCode = function(keyCode, keyCode2) {
+	switch (keyCode) {
+		case 38:
+			if ((this.position.y + this.height/2) + this.speed < field.height/2) {
+				this.position.y += this.human ? 5*this.speed: this.speed;
+				//this.mesh.position.y = this.position.y;
+			}
+		break;
+		case 40:
+			if ((this.position.y - this.height/2) - this.speed > -field.height/2) {
+				this.position.y -= this.human ? 5*this.speed: this.speed;
+				//this.mesh.position.y = this.position.y;
+			}
+		break;
+		case 87://w
+			if ((this.position.y + this.height/2) + this.speed < field.height/2) {
+				this.position.y += this.human ? 5*this.speed: this.speed;
+				//this.mesh.position.y = this.position.y;
+			}
+		break;
+		case 65://a
+			if ((this.position.x - this.width/2) - this.speed > -field.width/2) {
+				this.position.x -= this.human ? 5*this.speed: this.speed;
+				//this.mesh.position.y = this.position.y;
+			}
+		break;
+		case 83://s
+			if ((this.position.y - this.height/2) - this.speed > -field.height/2) {
+				this.position.y -= this.human ? 5*this.speed: this.speed;
+				//this.mesh.position.y = this.position.y;
+			}
+		break;
+		case 68://d
+			if ((this.position.x + this.width/2) + this.speed < field.width/2) {
+				this.position.x += this.human ? 5*this.speed: this.speed;
+				//this.mesh.position.y = this.position.y;
+			}
+		break;
+	}
+	
+	//possible solution for mouse move in 2d? 
+	if(typeof keyCode2 !== "undefined"){
+		switch (keyCode2) {
+			case 39:
+				if ((this.position.x + this.width/2) + this.speed < field.width/2) {
+					this.position.x += this.human ? 5*this.speed: this.speed;
+					//this.mesh.position.y = this.position.y;
+				}
+			break;
+			case 37:
+				if ((this.position.x - this.width/2) - this.speed > -field.width/2) {
+					this.position.x -= this.human ? 5*this.speed: this.speed;
+					//this.mesh.position.y = this.position.y;
+				}
+			break;
+		}
+	}
+>>>>>>> Physics update
 }
 
 // Default values
-Player.prototype.speed = 10;
+Player.prototype.speed = 5;
 Player.prototype.width = 50;
 Player.prototype.height = 100;
 Player.prototype.thickness = 10;
