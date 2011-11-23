@@ -12,10 +12,15 @@ function Game(container) {
 
     // demo
     this.mode = {
-        player1: false,
-        player2: false,
-        demo: true
-    };
+                player1: false,
+                player2: false,
+                demo: true
+            };
+	// this.mode = {
+	// 		player1: true,
+	// 		player2: true,
+	// 		demo: false
+	// 	}
 
     // menu options
     this.showMenu = true;
@@ -134,7 +139,7 @@ Game.prototype.prepareEvents = function() {
                 }
                 if (this.mode.player2) {
                     //this.players[1].handleKeyCode(this.prevY < mousey ? 38: 40, this.prevX < mousex ? 39: 37);
-					if(mousex/2-1100 > 275){
+					if(mousex/2-1100 > 70){
                     	this.players[1].position.x = mousex/2-1100;
 					}
                     this.players[1].position.y = mousey/2;
@@ -262,7 +267,7 @@ Game.prototype.prepareScene = function() {
 
         paddles.push(new jigLib.JSphere(null, 35));
         paddles[playerIndex].set_mass(100);
-        paddles[playerIndex].set_friction(0);
+        paddles[playerIndex].set_friction(5);
         paddles[playerIndex].set_restitution(120);
         paddles[playerIndex].moveTo([player.position.x, player.position.y, -100, 0]);
         paddles[playerIndex].set_movable(false);
@@ -399,7 +404,7 @@ Game.prototype.updateScene = function() {
             trajectory.normalize();
             var angle = Math.atan(trajectory.y / trajectory.x);
 
-            paddles[i].setVelocity([-playerMesh.speed / 25 * Math.cos(angle), -playerMesh.speed / 25 * Math.sin(angle), 0, 0]);
+            paddles[i].setVelocity([-playerMesh.speed/25 * Math.cos(angle), -playerMesh.speed/25 * Math.sin(angle), 0, 0]);
 
             //sync meshes
             this.JL2THREE(this.playerMeshes[i], paddles[i].get_currentState().position, paddles[i].get_currentState().get_orientation().glmatrix);
@@ -489,11 +494,11 @@ Game.prototype.initializeBall = function(ball) {
     if (!jball) {
         jball = new jigLib.JSphere(null, 20);
         jball.set_mass(10);
-        jball.set_friction(0);
+        jball.set_friction(5);
         jball.set_restitution(200);
         jball.set_movable(true);
         jball.set_rotVelocityDamping([0.995, 0.995, 0.995]);
-        jball.set_linVelocityDamping([0.995, 0.995, 0.995]);
+        //jball.set_linVelocityDamping([1, 1, 1]);
         jball.moveTo([ball.position.x, ball.position.y, -100, 0]);
         system.addBody(jball);
     }
@@ -553,7 +558,7 @@ Game.prototype.updatePaddlesShape = function(value){
 		        system.removeBody(paddles[playerIndex]);
 				paddles[playerIndex] = new jigLib.JSphere(null, 35);
 	        	paddles[playerIndex].set_mass(100);
-	        	paddles[playerIndex].set_friction(0);
+	        	paddles[playerIndex].set_friction(5);
 	        	paddles[playerIndex].set_restitution(120);
 	        	paddles[playerIndex].moveTo([player.position.x, player.position.y, -100, 0]);
 	        	paddles[playerIndex].set_movable(false);
@@ -584,7 +589,7 @@ Game.prototype.updatePaddlesShape = function(value){
 				paddles[playerIndex] = null;
 				paddles[playerIndex] = new jigLib.JBox(null, 55, 55, 55);
 	        	paddles[playerIndex].set_mass(100);
-	        	paddles[playerIndex].set_friction(0);
+	        	paddles[playerIndex].set_friction(5);
 	        	paddles[playerIndex].set_restitution(120);
 	        	paddles[playerIndex].moveTo([player.position.x, player.position.y, -100, 0]);
 	        	paddles[playerIndex].set_movable(false);

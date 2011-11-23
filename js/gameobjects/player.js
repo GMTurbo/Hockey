@@ -17,12 +17,12 @@ function Player(name, startX, startY) {
 }
 
 Player.prototype.hitTest = function(ball, isHitCallback) {
-    if (ball.get_currentState().position[0] < -(field.width / 2 + 130)) {
+    if (ball.get_currentState().position[0] < -(field.width / 2 + 190)) {
         if (isHitCallback) {
             isHitCallback(0);
         }
     }
-    if (ball.get_currentState().position[0] > field.width / 2 + 130) {
+    if (ball.get_currentState().position[0] > field.width / 2 + 190) {
         if (isHitCallback) {
             isHitCallback(1);
         }
@@ -75,7 +75,7 @@ Player.prototype.handleKeyCode = function(keyCode, keyCode2) {
             break;
         case 68:
             //D
-            if (this.position.x < -350) {
+            if (this.position.x < -70) {
                 this.position.x += this.human ? 5 * this.speed: this.speed;
             }
             break;
