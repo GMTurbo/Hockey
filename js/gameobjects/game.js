@@ -261,7 +261,7 @@ Game.prototype.prepareScene = function() {
         mesh.oldPosition = new THREE.Vector3(player.position.x, player.position.y, -100);
 
         paddles.push(new jigLib.JSphere(null, 35));
-        paddles[playerIndex].set_mass(50);
+        paddles[playerIndex].set_mass(100);
         paddles[playerIndex].set_friction(0);
         paddles[playerIndex].set_restitution(120);
         paddles[playerIndex].moveTo([player.position.x, player.position.y, -100, 0]);
@@ -531,6 +531,71 @@ Game.prototype.updateCamera = function(val, dim) {
     this.camera.lookAt(origin);
 }
 
+Game.prototype.updatePaddlesShape = function(value){
+	switch(value){
+		case 0://circular
+			for(var playerIndex in this.players){
+				this.scene.removeObject(this.playerMeshes[playerIndex]);
+				this.playerMeshes[playerIndex] = null;
+				
+				var player = this.players[playerIndex];
+		        var cylinder = new THREE.CylinderGeometry(40, 40, 40, 5, 5, false);
+		        var mesh = new THREE.Mesh(cylinder, new THREE.MeshBasicMaterial({
+		            color: Math.random() * 0xffffff
+		        }));
+		        mesh.position.x = player.position.x;
+		        mesh.position.y = player.position.y;
+		        mesh.position.z = -100;
+		        mesh.overdraw = true;
+		        mesh.matrixAutoUpdate = false;
+		        mesh.oldPosition = new THREE.Vector3(player.position.x, player.position.y, -100);
+
+		        system.removeBody(paddles[playerIndex]);
+				paddles[playerIndex] = new jigLib.JSphere(null, 35);
+	        	paddles[playerIndex].set_mass(100);
+	        	paddles[playerIndex].set_friction(0);
+	        	paddles[playerIndex].set_restitution(120);
+	        	paddles[playerIndex].moveTo([player.position.x, player.position.y, -100, 0]);
+	        	paddles[playerIndex].set_movable(false);
+				system.addBody(paddles[playerIndex]);
+
+		        this.scene.addObject(mesh);
+		        this.playerMeshes[playerIndex] = mesh;
+			}
+		break;
+		case 1://square
+			for(var playerIndex in this.players){
+				this.scene.removeObject(this.playerMeshes[playerIndex]);
+				this.playerMeshes[playerIndex] = null;
+				
+				var player = this.players[playerIndex];
+		        var cylinder = new THREE.CubeGeometry(55, 55, 55, 5, 5, false);
+		        var mesh = new THREE.Mesh(cylinder, new THREE.MeshBasicMaterial({
+		            color: Math.random() * 0xffffff
+		        }));
+		        mesh.position.x = player.position.x;
+		        mesh.position.y = player.position.y;
+		        mesh.position.z = -100;
+		        mesh.overdraw = true;
+		        mesh.matrixAutoUpdate = false;
+		        mesh.oldPosition = new THREE.Vector3(player.position.x, player.position.y, -100);
+				
+				system.removeBody(paddles[playerIndex]);
+				paddles[playerIndex] = null;
+				paddles[playerIndex] = new jigLib.JBox(null, 55, 55, 55);
+	        	paddles[playerIndex].set_mass(100);
+	        	paddles[playerIndex].set_friction(0);
+	        	paddles[playerIndex].set_restitution(120);
+	        	paddles[playerIndex].moveTo([player.position.x, player.position.y, -100, 0]);
+	        	paddles[playerIndex].set_movable(false);
+				system.addBody(paddles[playerIndex]);
+				
+				this.scene.addObject(mesh);
+		        this.playerMeshes[playerIndex] = mesh;
+			}
+		break;
+	}
+}
 // This method causes the scene to be re-rendered.
 Game.prototype.render = function(callback) {
 

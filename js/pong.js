@@ -77,7 +77,8 @@ var finished = false;
 	    CameraMode: 1,
 		cameraX: 0,
 		cameraY: 0,
-		cameraZ: 0
+		cameraZ: 0,
+		paddleShape: 0
 	};
 
 	function showGUI(game) {
@@ -122,6 +123,10 @@ var finished = false;
 		});
 		gui.add(controlProps, 'cameraZ').min(-200).max(200).step(10).listen().onChange(function(newValue){
 			game.updateCamera(controlProps.cameraZ, 'z');
+		});
+		//paddleShape
+		gui.add(controlProps, 'paddleShape').options( {'Circular': 0, 'Square': 1} ).onChange(function(newValue){
+			game.updatePaddlesShape(newValue);
 		});
 		
     	gui.close();
