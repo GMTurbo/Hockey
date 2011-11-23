@@ -17,12 +17,12 @@ function Player(name, startX, startY) {
 }
 
 Player.prototype.hitTest = function(ball, isHitCallback) {
-    if (ball.get_currentState().position[0] < -(field.width / 2 + 120)) {
+    if (ball.get_currentState().position[0] < -(field.width / 2 + 130)) {
         if (isHitCallback) {
             isHitCallback(0);
         }
     }
-    if (ball.get_currentState().position[0] > field.width / 2 + 120) {
+    if (ball.get_currentState().position[0] > field.width / 2 + 130) {
         if (isHitCallback) {
             isHitCallback(1);
         }
