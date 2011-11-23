@@ -59,10 +59,13 @@ var finished = false;
 			//buzz.defaults.formats = [ 'mp3' ];
 			boing = new buzz.sound('sounds/clack.mp3');
 			boing.load();
+			boing.volume = 0.5;
 			yay = new buzz.sound('http://www.pacdv.com/sounds/voices/yay.wav');
 			yay.load();
+			yay.volume = 0.5;
 			woohoo = new buzz.sound('http://www.pacdv.com/sounds/voices/woohoo.wav');
 			woohoo.load();
+			woohoo.volume = 0.5;
 		}
 		//boing.autoload = true;
 	}
